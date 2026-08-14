@@ -1,0 +1,35 @@
+[
+  {
+    "id": "capital-france",
+    "title": "Accurate capital",
+    "subject": "The capital of France is Paris.",
+    "context": "What is the capital of France?",
+    "reference": "Paris"
+  },
+  {
+    "id": "unfaithful-summary",
+    "title": "Unfaithful factory memo",
+    "subject": "The report concludes that the factory should double production next quarter because demand is unlimited.",
+    "context": "Internal memo: demand is seasonal and inventory is already high. Recommend holding production flat.",
+    "reference": "Hold production flat; do not increase output."
+  },
+  {
+    "id": "incomplete-howto",
+    "title": "Incomplete password reset",
+    "subject": "To reset the password, open settings.",
+    "context": "User asked for complete steps to reset a password, including email confirmation and choosing a new password.",
+    "reference": "Open settings, choose Security, Reset password, confirm via email, then set and save a new password."
+  },
+  {
+    "id": "clear-but-wrong",
+    "title": "Clear but wrong boiling point",
+    "subject": "Water boils at 50 degrees Celsius at standard atmospheric pressure. That is why tea is brewed quickly at sea level.",
+    "context": "At what temperature does water boil at 1 atm?",
+    "reference": "100°C (212°F) at 1 atmosphere."
+  },
+  {
+    "id": "subject-only-list",
+    "title": "Subject-only primary colors",
+    "subject": "Primary colors are red, blue, and yellow. Mixing red and blue makes purple."
+  }
+]

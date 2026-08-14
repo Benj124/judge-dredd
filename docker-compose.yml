@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: judge-dredd-postgres
+    environment:
+      POSTGRES_USER: judge
+      POSTGRES_PASSWORD: judge
+      POSTGRES_DB: judge_dredd
+    ports:
+      - "5432:5432"
+    volumes:
+      - judge_dredd_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U judge -d judge_dredd"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  judge_dredd_pg:

@@ -1,26 +1,97 @@
 @import "tailwindcss";
 
+/* Cool slate + indigo — clean internal tool look */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f6f9;
+  --foreground: #0f172a;
+  --surface: #ffffff;
+  --surface-muted: #eef2f7;
+  --border: #d8e0ea;
+  --muted: #64748b;
+  --accent: #4f46e5;
+  --accent-fg: #f8fafc;
+  --pass: #059669;
+  --pass-bg: #ecfdf5;
+  --fail: #dc2626;
+  --fail-bg: #fef2f2;
+  --pending: #d97706;
+  --ring: rgba(79, 70, 229, 0.28);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b1220;
+    --foreground: #e8eef7;
+    --surface: #121a2b;
+    --surface-muted: #1a2438;
+    --border: #2a364d;
+    --muted: #94a3b8;
+    --accent: #818cf8;
+    --accent-fg: #0b1020;
+    --pass: #34d399;
+    --pass-bg: #0d281f;
+    --fail: #f87171;
+    --fail-bg: #2a1215;
+    --pending: #fbbf24;
+    --ring: rgba(129, 140, 248, 0.32);
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-pass: var(--pass);
+  --color-pass-bg: var(--pass-bg);
+  --color-fail: var(--fail);
+  --color-fail-bg: var(--fail-bg);
+  --color-pending: var(--pending);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-display: var(--font-display);
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(1100px 480px at 6% -12%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 55%),
+    radial-gradient(900px 420px at 100% 0%, color-mix(in oklab, var(--pass) 8%, transparent), transparent 50%),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+.score-bar {
+  background: var(--surface-muted);
+}
+
+.score-bar > span {
+  background: linear-gradient(90deg, var(--accent), color-mix(in oklab, var(--accent) 45%, var(--pass)));
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.pending-pulse {
+  animation: pulse-soft 1.2s ease-in-out infinite;
+}
+
+/* Tab strip: allow horizontal scroll on narrow viewports without clipping labels */
+[role="tablist"] {
+  scrollbar-width: thin;
 }

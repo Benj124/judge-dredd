@@ -1,3 +1,4 @@
+import { getXaiApiKeys } from "../eval/xai";
 import { EMBED_DIM, resolveEmbedModel } from "./models";
 
 export type EmbedFn = (text: string) => Promise<number[]>;
@@ -20,7 +21,7 @@ export function stubEmbedSync(text: string, dim = EMBED_DIM): number[] {
 export const stubEmbed: EmbedFn = async (text) => stubEmbedSync(text);
 
 export const xaiEmbed: EmbedFn = async (text) => {
-  const apiKey = process.env.XAI_API_KEY?.trim();
+  const apiKey = getXaiApiKeys()[0];
   if (!apiKey) {
     throw new Error("XAI_API_KEY is not set");
   }

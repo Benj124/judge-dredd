@@ -34,7 +34,9 @@ test("stubComplete emits judge JSON for criterion ids in the user payload", asyn
 
 test("xaiComplete fails closed on a missing key without opening a network request", async () => {
   const previous = process.env.XAI_API_KEY;
+  const previous2 = process.env.XAI_API_KEY2;
   delete process.env.XAI_API_KEY;
+  delete process.env.XAI_API_KEY2;
   try {
     await assert.rejects(
       () =>
@@ -48,5 +50,7 @@ test("xaiComplete fails closed on a missing key without opening a network reques
   } finally {
     if (previous === undefined) delete process.env.XAI_API_KEY;
     else process.env.XAI_API_KEY = previous;
+    if (previous2 === undefined) delete process.env.XAI_API_KEY2;
+    else process.env.XAI_API_KEY2 = previous2;
   }
 });

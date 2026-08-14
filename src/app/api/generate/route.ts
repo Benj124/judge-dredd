@@ -1,8 +1,8 @@
-import { evaluateHttp } from "@/lib/eval/http";
+import { generateHttp } from "@/lib/eval/generateHttp";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
-  return evaluateHttp(request);
+  return generateHttp(request);
 }

@@ -5,7 +5,7 @@ import {
   saveStoredRubric,
   type AgenticOptions,
 } from "../db/store";
-import { getEmbedder } from "../rag/embed";
+import { stubEmbed } from "../rag/embed";
 import { hybridRetrieve } from "../rag/retrieve";
 import { getJudgeComplete } from "./complete";
 import { parseRubric } from "./parseRubric";
@@ -58,12 +58,20 @@ export async function evaluateHttp(request: Request): Promise<Response> {
     storedModel = undefined;
   }
 
-  const embed = getEmbedder();
   const result = await evaluatePointwise(body, {
     complete: getJudgeComplete(),
     model: storedModel,
     resolveRubricId: (id) => resolveRubric(id),
-    retrieve: (query) => hybridRetrieve(query, { embed }),
+    retrieve: async (query) => {
+      try {
+        return await hybridRetrieve(query, {
+          embed: stubEmbed,
+          limit: 3,
+        });
+      } catch {
+        return [];
+      }
+    },
   });
 
   if (!result.ok) {

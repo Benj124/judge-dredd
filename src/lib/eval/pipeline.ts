@@ -54,9 +54,9 @@ export function buildJudgePrompt(job: {
     subject: job.subject,
     context: job.context ?? null,
     reference: job.reference ?? null,
-    retrievedPassages: (job.retrievedPassages ?? []).map((passage) => ({
+    retrievedPassages: (job.retrievedPassages ?? []).slice(0, 3).map((passage) => ({
       id: passage.id,
-      text: passage.text,
+      text: passage.text.slice(0, 400),
       score: passage.score,
       source: passage.source ?? null,
     })),
@@ -115,7 +115,10 @@ export async function evaluatePointwise(
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Judge call failed";
-    const code = message.includes("XAI_API_KEY") ? "config" : "judge";
+    const code =
+      /XAI_API_KEY|Incorrect xAI API key|Incorrect API key/i.test(message)
+        ? "config"
+        : "judge";
     return fail(code, message);
   }
 

@@ -39,6 +39,24 @@ export async function insertChunks(
   return ids;
 }
 
+/**
+ * Build an OR-joined english tsquery from query text.
+ * plainto_tsquery ANDs every token, so natural-language framing
+ * ("Is this claim grounded…") zeros out hits even when distinctive
+ * terms like "zinnium" are present. OR keeps lexical recall usable.
+ */
+export function buildLexicalTsQuery(text: string): string {
+  const tokens = text
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3);
+  const unique = [...new Set(tokens)];
+  if (unique.length === 0) return "";
+  // to_tsquery terms: alphanumeric only; stem via config in SQL.
+  return unique.map((token) => token.replace(/'/g, "''")).join(" | ");
+}
+
 export async function hybridRetrieve(
   query: string,
   options: { embed: EmbedFn; limit?: number; pool?: Pool },
@@ -49,6 +67,7 @@ export async function hybridRetrieve(
   const pool = options.pool ?? getPool();
   const vector = await options.embed(text);
   const literal = formatVectorLiteral(vector);
+  const lexicalTs = buildLexicalTsQuery(text);
 
   const [vectorHits, lexicalHits] = await Promise.all([
     pool.query<HitRow>(
@@ -59,15 +78,17 @@ export async function hybridRetrieve(
        LIMIT $2`,
       [literal, limit],
     ),
-    pool.query<HitRow>(
-      `SELECT id::text, content, source,
-              ts_rank(tsv, q)::float8 AS score
-       FROM rag_chunks, plainto_tsquery('english', $1) AS q
-       WHERE tsv @@ q
-       ORDER BY score DESC
-       LIMIT $2`,
-      [text, limit],
-    ),
+    lexicalTs
+      ? pool.query<HitRow>(
+          `SELECT id::text, content, source,
+                  ts_rank(tsv, q)::float8 AS score
+           FROM rag_chunks, to_tsquery('english', $1) AS q
+           WHERE tsv @@ q
+           ORDER BY score DESC
+           LIMIT $2`,
+          [lexicalTs, limit],
+        )
+      : Promise.resolve({ rows: [] as HitRow[] }),
   ]);
 
   const fused = reciprocalRankFuse([

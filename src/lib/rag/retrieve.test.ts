@@ -6,10 +6,20 @@ import { getEmbedder, stubEmbed } from "./embed";
 import { reciprocalRankFuse } from "./fuse";
 import { runRetrieveGraph } from "./graph";
 import { DEFAULT_EMBED_MODEL, isFrontierEmbedModel } from "./models";
-import { hybridRetrieve, insertChunks } from "./retrieve";
+import { buildLexicalTsQuery, hybridRetrieve, insertChunks } from "./retrieve";
 
 after(async () => {
   await closePool();
+});
+
+test("buildLexicalTsQuery ORs distinctive tokens for natural-language recall", () => {
+  const q = buildLexicalTsQuery(
+    "Is this claim grounded?\nThe briefing claims the zinnium crystal glows at midnight.",
+  );
+  assert.match(q, /zinnium/);
+  assert.match(q, /crystal/);
+  assert.match(q, /\|/);
+  assert.equal(buildLexicalTsQuery("  a b  "), "");
 });
 
 test("default embed model is cheap and not a frontier chat alias", () => {

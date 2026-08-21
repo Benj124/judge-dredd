@@ -75,3 +75,25 @@ CREATE TABLE IF NOT EXISTS eval_dataset_rows (
 
 CREATE INDEX IF NOT EXISTS eval_dataset_rows_source_idx
   ON eval_dataset_rows (source_file);
+
+-- Full-text public web pages (Wikipedia seeds first). Local only; no AWS.
+CREATE TABLE IF NOT EXISTS text_documents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  canonical_url TEXT NOT NULL UNIQUE,
+  full_text TEXT NOT NULL,
+  content_hash TEXT NOT NULL,
+  site TEXT NOT NULL DEFAULT 'en.wikipedia.org',
+  fetched_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  http_status INT,
+  meta JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS text_documents_site_idx
+  ON text_documents (site);
+
+CREATE INDEX IF NOT EXISTS text_documents_fetched_at_idx
+  ON text_documents (fetched_at DESC);

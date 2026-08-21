@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export type DashboardTabId =
   | "fixtures"
@@ -8,7 +9,8 @@ export type DashboardTabId =
   | "history"
   | "batch"
   | "rubrics"
-  | "agent";
+  | "agent"
+  | "synthesize";
 
 const TABS: Array<{ id: DashboardTabId; label: string; hint: string }> = [
   {
@@ -41,6 +43,11 @@ const TABS: Array<{ id: DashboardTabId; label: string; hint: string }> = [
     label: "Agent options",
     hint: "Judge model and agent knobs",
   },
+  {
+    id: "synthesize",
+    label: "Synthesize",
+    hint: "Questions from stored full-text docs",
+  },
 ];
 
 export function DashboardShell({
@@ -53,68 +60,48 @@ export function DashboardShell({
 
   return (
     <section className="flex flex-col gap-5">
-      <div className="rounded-2xl border border-border bg-surface/90 p-2 shadow-[0_20px_50px_-32px_rgba(28,20,10,0.45)] sm:p-2.5">
-        <div
-          role="tablist"
-          aria-label="Dashboard flows"
-          className="flex flex-wrap gap-1.5"
-        >
-          {TABS.map((tab) => {
-            const selected = tab.id === active;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                id={`tab-${tab.id}`}
-                aria-selected={selected}
-                aria-controls={`panel-${tab.id}`}
-                onClick={() => setActive(tab.id)}
-                className={[
-                  "min-w-[9.5rem] flex-1 rounded-xl px-3.5 py-2.5 text-left transition sm:flex-none",
-                  selected
-                    ? "bg-accent text-accent-fg shadow-sm"
-                    : "bg-transparent text-foreground hover:bg-surface-muted/80",
-                ].join(" ")}
-              >
-                <span className="block text-sm font-semibold leading-tight">
-                  {tab.label}
-                </span>
-                <span
-                  className={[
-                    "mt-0.5 block text-[11px] leading-snug",
-                    selected ? "text-accent-fg/85" : "text-muted",
-                  ].join(" ")}
-                >
-                  {tab.hint}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <Tabs
+        value={active}
+        onValueChange={(value) => setActive(value as DashboardTabId)}
+        className="flex flex-col gap-5"
+      >
+        <TabsList aria-label="Dashboard flows">
+          {TABS.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              id={`tab-${tab.id}`}
+              aria-controls={`panel-${tab.id}`}
+              className="group"
+            >
+              <span className="block text-sm font-semibold leading-tight">
+                {tab.label}
+              </span>
+              <span className="mt-0.5 block text-[11px] leading-snug text-muted group-data-[state=active]:text-accent-fg/85">
+                {tab.hint}
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      <p className="px-1 text-sm text-muted">
-        <span className="font-medium text-foreground">{activeMeta.label}</span>
-        {" · "}
-        {activeMeta.hint}
-      </p>
+        <p className="px-1 text-sm text-muted">
+          <span className="font-medium text-foreground">{activeMeta.label}</span>
+          {" · "}
+          {activeMeta.hint}
+        </p>
 
-      {TABS.map((tab) => {
-        const selected = tab.id === active;
-        return (
-          <div
+        {TABS.map((tab) => (
+          <TabsContent
             key={tab.id}
-            role="tabpanel"
+            value={tab.id}
             id={`panel-${tab.id}`}
             aria-labelledby={`tab-${tab.id}`}
-            hidden={!selected}
-            className={selected ? "block" : "hidden"}
+            forceMount
           >
             {panels[tab.id]}
-          </div>
-        );
-      })}
+          </TabsContent>
+        ))}
+      </Tabs>
     </section>
   );
 }

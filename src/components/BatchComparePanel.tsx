@@ -4,6 +4,19 @@ import { useState } from "react";
 import { parseBatchJobs } from "@/lib/eval/batchParse";
 import { compareEvaluateRuns, type CompareResult } from "@/lib/eval/compare";
 import { formatOverall } from "@/lib/eval/format";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { PassFailBadge } from "./PassFailBadge";
 
 type EvaluateResponse =
@@ -184,18 +197,18 @@ export function BatchComparePanel() {
         </p>
       </div>
 
-      <button
+      <Button
         type="button"
+        variant="secondary"
         onClick={() => void loadDataset()}
         disabled={busy}
-        className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold"
       >
         Load eval_data.csv from database
-      </button>
+      </Button>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Upload JSONL or CSV</span>
-        <input
+      <Label>
+        <span>Upload JSONL or CSV</span>
+        <Input
           type="file"
           accept=".jsonl,.json,.csv,text/csv,application/json"
           onChange={(event) => {
@@ -203,99 +216,95 @@ export function BatchComparePanel() {
             if (file) onFile(file);
           }}
         />
-      </label>
+      </Label>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Paste JSONL or CSV</span>
-        <textarea
+      <Label>
+        <span>Paste JSONL or CSV</span>
+        <Textarea
           value={paste}
           onChange={(event) => setPaste(event.target.value)}
           rows={6}
-          className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+          className="font-mono text-sm"
         />
-      </label>
+      </Label>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium">Format</span>
-        <select
+      <Label>
+        <span>Format</span>
+        <Select
           value={format}
           onChange={(event) => setFormat(event.target.value as "jsonl" | "csv")}
-          className="rounded-lg border border-border bg-background px-3 py-2"
         >
           <option value="jsonl">JSONL</option>
           <option value="csv">CSV</option>
-        </select>
-      </label>
+        </Select>
+      </Label>
 
-      <button
+      <Button
         type="button"
         onClick={() => void runBatch()}
         disabled={busy}
-        className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg disabled:opacity-60"
       >
         {busy ? "Running batch…" : "Run batch"}
-      </button>
+      </Button>
 
       {batchId ? (
         <p className="font-mono text-xs text-muted">campaign {batchId}</p>
       ) : null}
 
       {rows.length > 0 ? (
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="text-xs uppercase text-muted">
-              <th className="py-1">Id</th>
-              <th className="py-1">Overall</th>
-              <th className="py-1">Pass/fail</th>
-              <th className="py-1">Run id</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-0">
+              <TableHead className="py-1">Id</TableHead>
+              <TableHead className="py-1">Overall</TableHead>
+              <TableHead className="py-1">Pass/fail</TableHead>
+              <TableHead className="py-1">Run id</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((row) => (
-              <tr key={row.id} className="border-t border-border/70">
-                <td className="py-1 font-mono text-xs">{row.id}</td>
-                <td className="py-1">
+              <TableRow key={row.id}>
+                <TableCell className="py-1 font-mono text-xs">{row.id}</TableCell>
+                <TableCell className="py-1">
                   {row.overall === null ? "—" : formatOverall(row.overall)}
-                </td>
-                <td className="py-1">
+                </TableCell>
+                <TableCell className="py-1">
                   {row.overall === null ? (
                     "—"
                   ) : (
                     <PassFailBadge passed={row.passed} size="sm" />
                   )}
-                </td>
-                <td className="py-1 font-mono text-xs">{row.runId ?? "—"}</td>
-              </tr>
+                </TableCell>
+                <TableCell className="py-1 font-mono text-xs">
+                  {row.runId ?? "—"}
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Compare A (run id)</span>
-          <input
+        <Label>
+          <span>Compare A (run id)</span>
+          <Input
             value={runA}
             onChange={(event) => setRunA(event.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+            className="font-mono text-sm"
           />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Compare B (run id)</span>
-          <input
+        </Label>
+        <Label>
+          <span>Compare B (run id)</span>
+          <Input
             value={runB}
             onChange={(event) => setRunB(event.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm"
+            className="font-mono text-sm"
           />
-        </label>
+        </Label>
       </div>
-      <button
-        type="button"
-        onClick={() => void runCompare()}
-        className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold"
-      >
+      <Button type="button" variant="secondary" onClick={() => void runCompare()}>
         Compare A vs B
-      </button>
+      </Button>
 
       {compare ? (
         <div className="rounded-xl border border-border bg-background/50 p-4">

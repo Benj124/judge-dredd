@@ -14,7 +14,7 @@ export async function migrate(): Promise<void> {
 async function main() {
   await migrate();
   process.stdout.write(
-    "Migrated evaluate_runs, stored_rubrics, agentic_options, and rag_chunks schema.\n",
+    "Migrated evaluate_runs, stored_rubrics, agentic_options, rag_chunks, eval_dataset_rows, and text_documents schema.\n",
   );
   await closePool();
 }

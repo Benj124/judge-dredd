@@ -7,23 +7,33 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/eval/aggregate.test.ts src/lib/eval/pipeline.test.ts src/lib/eval/http.test.ts src/lib/eval/format.test.ts src/lib/eval/checks.test.ts src/lib/eval/parse.test.ts src/lib/eval/complete.test.ts src/lib/eval/runQuestions.test.ts src/lib/eval/campaign.test.ts src/lib/eval/rubrics.test.ts src/lib/eval/ragJudge.test.ts src/lib/eval/batchCompare.test.ts src/lib/eval/etlDataset.test.ts src/lib/eval/generate.test.ts src/lib/db/config.test.ts src/lib/db/store.test.ts src/lib/db/history.test.ts src/lib/rag/retrieve.test.ts",
-    "test:coverage": "c8 --extension .ts --include src/lib/eval --include src/lib/db --include src/lib/rag --exclude \"**/*.test.ts\" --reporter=text --reporter=json-summary --reports-dir coverage tsx --test src/lib/eval/aggregate.test.ts src/lib/eval/pipeline.test.ts src/lib/eval/http.test.ts src/lib/eval/format.test.ts src/lib/eval/checks.test.ts src/lib/eval/parse.test.ts src/lib/eval/complete.test.ts src/lib/eval/runQuestions.test.ts src/lib/eval/campaign.test.ts src/lib/eval/rubrics.test.ts src/lib/db/config.test.ts src/lib/db/store.test.ts src/lib/db/history.test.ts src/lib/rag/retrieve.test.ts",
+    "test": "tsx --test src/lib/agentStack.test.ts src/lib/eval/aggregate.test.ts src/lib/eval/pipeline.test.ts src/lib/eval/http.test.ts src/lib/eval/format.test.ts src/lib/eval/checks.test.ts src/lib/eval/parse.test.ts src/lib/eval/complete.test.ts src/lib/eval/runQuestions.test.ts src/lib/eval/campaign.test.ts src/lib/eval/rubrics.test.ts src/lib/eval/ragJudge.test.ts src/lib/eval/batchCompare.test.ts src/lib/eval/etlDataset.test.ts src/lib/eval/generate.test.ts src/lib/db/config.test.ts src/lib/db/store.test.ts src/lib/db/history.test.ts src/lib/rag/retrieve.test.ts src/lib/rag/chunk.test.ts src/lib/rag/ingestDocuments.test.ts src/lib/graph/clean.test.ts src/lib/graph/store.test.ts src/lib/graph/synthesize.test.ts src/components/SynthesizePanel.test.tsx src/components/ui/uiPrimitives.test.tsx",
+    "test:coverage": "c8 --extension .ts --include src/lib/eval --include src/lib/db --include src/lib/rag --include src/lib/graph --exclude \"**/*.test.ts\" --reporter=text --reporter=json-summary --reports-dir coverage tsx --test src/lib/eval/aggregate.test.ts src/lib/eval/pipeline.test.ts src/lib/eval/http.test.ts src/lib/eval/format.test.ts src/lib/eval/checks.test.ts src/lib/eval/parse.test.ts src/lib/eval/complete.test.ts src/lib/eval/runQuestions.test.ts src/lib/eval/campaign.test.ts src/lib/eval/rubrics.test.ts src/lib/db/config.test.ts src/lib/db/store.test.ts src/lib/db/history.test.ts src/lib/rag/retrieve.test.ts src/lib/rag/chunk.test.ts src/lib/rag/ingestDocuments.test.ts src/lib/graph/clean.test.ts src/lib/graph/store.test.ts src/lib/graph/synthesize.test.ts src/components/SynthesizePanel.test.tsx",
     "eval:questions": "tsx src/lib/eval/runQuestions.cli.ts",
     "db:up": "bash scripts/db-up.sh",
     "db:migrate": "tsx src/lib/db/migrate.ts",
     "db:smoke": "tsx src/lib/db/smoke.ts",
     "rag:query": "tsx src/lib/rag/query.cli.ts",
     "rag:ground": "tsx src/lib/rag/ground.cli.ts",
-    "etl:eval-data": "tsx src/lib/eval/etlDataset.cli.ts"
+    "rag:ingest-whales": "tsx src/lib/rag/ingestWhales.cli.ts",
+    "etl:eval-data": "tsx src/lib/eval/etlDataset.cli.ts",
+    "graph:ingest-whales": "tsx src/lib/graph/ingestWhales.cli.ts"
   },
   "dependencies": {
     "@langchain/core": "^1.2.7",
     "@langchain/langgraph": "^1.4.9",
+    "@radix-ui/react-label": "^2.1.15",
+    "@radix-ui/react-slot": "^1.3.3",
+    "@radix-ui/react-tabs": "^1.1.21",
+    "cheerio": "^1.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "next": "16.3.1",
     "pg": "^8.16.3",
+    "playwright": "^1.62.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

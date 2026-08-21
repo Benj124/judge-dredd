@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 export type EditableCriterion = {
   id: string;
@@ -112,8 +117,7 @@ function toPayload(draft: EditableRubric) {
   };
 }
 
-const fieldClass =
-  "w-full rounded-xl border border-border bg-background/70 px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-60";
+const fieldClass = "rounded-xl px-3 py-2 text-sm";
 
 export function RubricEditor() {
   const [rubrics, setRubrics] = useState<ListedRubric[]>([]);
@@ -224,17 +228,18 @@ export function RubricEditor() {
             they persist in local Postgres and appear in the playground.
           </p>
         </div>
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="sm"
           onClick={() => {
             setDraft(emptyRubric());
             setNotice(null);
             setError(null);
           }}
-          className="rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-surface-muted"
         >
           New evaluation prompt
-        </button>
+        </Button>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[16rem_1fr]">
@@ -282,9 +287,9 @@ export function RubricEditor() {
           ) : null}
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Id</span>
-              <input
+            <Label>
+              <span>Id</span>
+              <Input
                 className={fieldClass}
                 required
                 disabled={saving || draft.id === "default"}
@@ -292,30 +297,30 @@ export function RubricEditor() {
                 onChange={(event) => patchDraft({ id: event.target.value })}
                 placeholder="my-prompt"
               />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Version</span>
-              <input
+            </Label>
+            <Label>
+              <span>Version</span>
+              <Input
                 className={fieldClass}
                 required
                 disabled={saving || draft.id === "default"}
                 value={draft.version}
                 onChange={(event) => patchDraft({ version: event.target.value })}
               />
-            </label>
-            <label className="flex flex-col gap-1.5 sm:col-span-2">
-              <span className="text-sm font-medium">Name</span>
-              <input
+            </Label>
+            <Label className="sm:col-span-2">
+              <span>Name</span>
+              <Input
                 className={fieldClass}
                 required
                 disabled={saving || draft.id === "default"}
                 value={draft.name}
                 onChange={(event) => patchDraft({ name: event.target.value })}
               />
-            </label>
-            <label className="flex flex-col gap-1.5 sm:col-span-2">
-              <span className="text-sm font-medium">Description</span>
-              <textarea
+            </Label>
+            <Label className="sm:col-span-2">
+              <span>Description</span>
+              <Textarea
                 className={fieldClass}
                 rows={2}
                 disabled={saving || draft.id === "default"}
@@ -324,10 +329,10 @@ export function RubricEditor() {
                   patchDraft({ description: event.target.value })
                 }
               />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">Overall pass rule</span>
-              <select
+            </Label>
+            <Label>
+              <span>Overall pass rule</span>
+              <Select
                 className={fieldClass}
                 disabled={saving || draft.id === "default"}
                 value={draft.overallPassRule}
@@ -339,14 +344,14 @@ export function RubricEditor() {
               >
                 <option value="weighted_average">weighted_average</option>
                 <option value="all_must_pass">all_must_pass</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium">
+              </Select>
+            </Label>
+            <Label>
+              <span>
                 Overall threshold{" "}
                 <span className="font-normal text-muted">(optional)</span>
               </span>
-              <input
+              <Input
                 className={fieldClass}
                 type="number"
                 step="any"
@@ -356,31 +361,32 @@ export function RubricEditor() {
                   patchDraft({ overallPassThreshold: event.target.value })
                 }
               />
-            </label>
+            </Label>
           </div>
 
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
               <p className="text-sm font-medium">Criteria</p>
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 disabled={saving || draft.id === "default"}
                 onClick={() =>
                   patchDraft({ criteria: [...draft.criteria, emptyCriterion()] })
                 }
-                className="rounded-lg border border-border px-2.5 py-1 text-xs font-medium hover:bg-surface-muted disabled:opacity-50"
               >
                 Add criterion
-              </button>
+              </Button>
             </div>
             {draft.criteria.map((criterion, index) => (
               <div
                 key={index}
                 className="grid gap-2 rounded-xl border border-border/80 bg-background/30 p-3 sm:grid-cols-2"
               >
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs text-muted">Id</span>
-                  <input
+                <Label className="gap-1">
+                  <span className="text-xs font-normal text-muted">Id</span>
+                  <Input
                     className={fieldClass}
                     required
                     disabled={saving || draft.id === "default"}
@@ -389,10 +395,10 @@ export function RubricEditor() {
                       patchCriterion(index, { id: event.target.value })
                     }
                   />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs text-muted">Name</span>
-                  <input
+                </Label>
+                <Label className="gap-1">
+                  <span className="text-xs font-normal text-muted">Name</span>
+                  <Input
                     className={fieldClass}
                     required
                     disabled={saving || draft.id === "default"}
@@ -401,10 +407,10 @@ export function RubricEditor() {
                       patchCriterion(index, { name: event.target.value })
                     }
                   />
-                </label>
-                <label className="flex flex-col gap-1 sm:col-span-2">
-                  <span className="text-xs text-muted">Description</span>
-                  <input
+                </Label>
+                <Label className="gap-1 sm:col-span-2">
+                  <span className="text-xs font-normal text-muted">Description</span>
+                  <Input
                     className={fieldClass}
                     required
                     disabled={saving || draft.id === "default"}
@@ -413,10 +419,10 @@ export function RubricEditor() {
                       patchCriterion(index, { description: event.target.value })
                     }
                   />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs text-muted">Scale min</span>
-                  <input
+                </Label>
+                <Label className="gap-1">
+                  <span className="text-xs font-normal text-muted">Scale min</span>
+                  <Input
                     className={fieldClass}
                     type="number"
                     required
@@ -428,10 +434,10 @@ export function RubricEditor() {
                       })
                     }
                   />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs text-muted">Scale max</span>
-                  <input
+                </Label>
+                <Label className="gap-1">
+                  <span className="text-xs font-normal text-muted">Scale max</span>
+                  <Input
                     className={fieldClass}
                     type="number"
                     required
@@ -443,10 +449,10 @@ export function RubricEditor() {
                       })
                     }
                   />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs text-muted">Weight</span>
-                  <input
+                </Label>
+                <Label className="gap-1">
+                  <span className="text-xs font-normal text-muted">Weight</span>
+                  <Input
                     className={fieldClass}
                     type="number"
                     step="any"
@@ -459,10 +465,10 @@ export function RubricEditor() {
                       })
                     }
                   />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs text-muted">Pass threshold</span>
-                  <input
+                </Label>
+                <Label className="gap-1">
+                  <span className="text-xs font-normal text-muted">Pass threshold</span>
+                  <Input
                     className={fieldClass}
                     type="number"
                     step="any"
@@ -474,20 +480,21 @@ export function RubricEditor() {
                       })
                     }
                   />
-                </label>
+                </Label>
                 {draft.criteria.length > 1 && draft.id !== "default" ? (
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
                     disabled={saving}
                     onClick={() =>
                       patchDraft({
                         criteria: draft.criteria.filter((_, i) => i !== index),
                       })
                     }
-                    className="sm:col-span-2 justify-self-start text-xs font-medium text-fail hover:underline"
+                    className="sm:col-span-2 justify-self-start text-xs text-fail"
                   >
                     Remove criterion
-                  </button>
+                  </Button>
                 ) : null}
               </div>
             ))}
@@ -496,13 +503,9 @@ export function RubricEditor() {
           {error ? <p className="text-sm text-fail">{error}</p> : null}
           {notice ? <p className="text-sm text-pass">{notice}</p> : null}
 
-          <button
-            type="submit"
-            disabled={saving || draft.id === "default"}
-            className="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" disabled={saving || draft.id === "default"}>
             {saving ? "Saving…" : "Save evaluation prompt"}
-          </button>
+          </Button>
         </form>
       </div>
     </section>

@@ -3,6 +3,19 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { formatOverall } from "@/lib/eval/format";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { PassFailBadge } from "./PassFailBadge";
 
 type HistoryRun = {
@@ -102,112 +115,108 @@ export function HistoryPanel() {
           void load();
         }}
       >
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Rubric</span>
-          <input
+        <Label>
+          <span>Rubric</span>
+          <Input
             name="rubricId"
             value={rubricId}
             onChange={(event) => setRubricId(event.target.value)}
             placeholder="default"
-            className="rounded-lg border border-border bg-background px-3 py-2"
+            className="rounded-lg"
           />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">Pass/fail</span>
-          <select
+        </Label>
+        <Label>
+          <span>Pass/fail</span>
+          <Select
             name="passed"
             value={passed}
             onChange={(event) => setPassed(event.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2"
+            className="rounded-lg"
           >
             <option value="">All</option>
             <option value="true">Pass</option>
             <option value="false">Fail</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">From date</span>
-          <input
+          </Select>
+        </Label>
+        <Label>
+          <span>From date</span>
+          <Input
             type="date"
             name="from"
             value={from}
             onChange={(event) => setFrom(event.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2"
+            className="rounded-lg"
           />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium">To date</span>
-          <input
+        </Label>
+        <Label>
+          <span>To date</span>
+          <Input
             type="date"
             name="to"
             value={to}
             onChange={(event) => setTo(event.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2"
+            className="rounded-lg"
           />
-        </label>
-        <button
+        </Label>
+        <Button
           type="submit"
-          className="rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg sm:col-span-2 lg:col-span-4"
+          className="sm:col-span-2 lg:col-span-4"
         >
           {loading ? "Loading…" : "Apply filters"}
-        </button>
+        </Button>
       </form>
 
       {error ? <p className="text-sm text-fail">{error}</p> : null}
 
-      <div className="overflow-x-auto rounded-xl border border-border">
-        <table className="w-full text-left text-sm">
-          <caption className="sr-only">Evaluate run history</caption>
-          <thead className="bg-surface-muted/80 text-xs uppercase tracking-wide text-muted">
-            <tr>
-              <th className="px-3 py-2 font-medium">When</th>
-              <th className="px-3 py-2 font-medium">Rubric</th>
-              <th className="px-3 py-2 font-medium">Pass/fail</th>
-              <th className="px-3 py-2 font-medium">Overall</th>
-              <th className="px-3 py-2 font-medium">Open</th>
-            </tr>
-          </thead>
-          <tbody>
-            {runs.length === 0 ? (
-              <tr>
-                <td className="px-3 py-4 text-muted" colSpan={5}>
-                  No runs match these filters.
-                </td>
-              </tr>
-            ) : (
-              runs.map((run) => (
-                <tr key={run.id} className="border-t border-border/70">
-                  <td className="px-3 py-2 font-mono text-xs">
-                    {new Date(run.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-3 py-2">{run.rubricId}</td>
-                  <td className="px-3 py-2">
-                    <PassFailBadge passed={run.verdict.passed} size="sm" />
-                  </td>
-                  <td className="px-3 py-2 font-mono">
-                    {formatOverall(run.verdict.overall)}
-                  </td>
-                  <td className="px-3 py-2">
-                    <button
-                      type="button"
-                      onClick={() => void openRun(run.id)}
-                      className="mr-3 text-sm font-medium underline"
-                    >
-                      View
-                    </button>
-                    <Link
-                      href={`/history/${run.id}`}
-                      className="text-sm font-medium underline"
-                    >
-                      Page
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table>
+        <TableCaption className="sr-only">Evaluate run history</TableCaption>
+        <TableHeader>
+          <TableRow className="border-0">
+            <TableHead>When</TableHead>
+            <TableHead>Rubric</TableHead>
+            <TableHead>Pass/fail</TableHead>
+            <TableHead>Overall</TableHead>
+            <TableHead>Open</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {runs.length === 0 ? (
+            <TableRow>
+              <TableCell className="text-muted" colSpan={5}>
+                No runs match these filters.
+              </TableCell>
+            </TableRow>
+          ) : (
+            runs.map((run) => (
+              <TableRow key={run.id}>
+                <TableCell className="font-mono text-xs">
+                  {new Date(run.createdAt).toLocaleString()}
+                </TableCell>
+                <TableCell>{run.rubricId}</TableCell>
+                <TableCell>
+                  <PassFailBadge passed={run.verdict.passed} size="sm" />
+                </TableCell>
+                <TableCell className="font-mono">
+                  {formatOverall(run.verdict.overall)}
+                </TableCell>
+                <TableCell>
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => void openRun(run.id)}
+                    className="mr-3"
+                  >
+                    View
+                  </Button>
+                  <Button asChild variant="link">
+                    <Link href={`/history/${run.id}`}>Page</Link>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
 
       {openId && detail && detail.id === openId ? (
         <article className="rounded-xl border border-border bg-background/60 p-4">

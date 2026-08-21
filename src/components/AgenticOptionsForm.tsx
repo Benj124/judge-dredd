@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DEFAULT_JUDGE_MODEL } from "@/lib/eval/models";
-
-const fieldClass =
-  "w-full rounded-xl border border-border bg-background/70 px-3.5 py-2.5 text-[15px] leading-6 text-foreground outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-60";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function AgenticOptionsForm() {
   const [judgeModel, setJudgeModel] = useState(DEFAULT_JUDGE_MODEL);
@@ -90,23 +90,22 @@ export function AgenticOptionsForm() {
         <p className="text-sm text-muted">Loading options…</p>
       ) : (
         <form onSubmit={(event) => void onSave(event)} className="flex max-w-xl flex-col gap-5">
-          <label className="flex flex-col gap-1.5" htmlFor="judge-model">
-            <span className="text-sm font-medium">Judge model</span>
-            <input
+          <Label htmlFor="judge-model">
+            <span>Judge model</span>
+            <Input
               id="judge-model"
               name="judgeModel"
               required
               disabled={saving}
               value={judgeModel}
               onChange={(event) => setJudgeModel(event.target.value)}
-              className={fieldClass}
               placeholder={DEFAULT_JUDGE_MODEL}
             />
-            <span className="text-xs leading-5 text-muted">
+            <span className="text-xs font-normal leading-5 text-muted">
               Default when unset:{" "}
               <code className="font-mono">{DEFAULT_JUDGE_MODEL}</code>
             </span>
-          </label>
+          </Label>
 
           {updatedAt ? (
             <p className="text-xs text-muted">
@@ -121,21 +120,17 @@ export function AgenticOptionsForm() {
           {notice ? <p className="text-sm text-pass">{notice}</p> : null}
 
           <div className="flex flex-wrap gap-2">
-            <button
-              type="submit"
-              disabled={saving}
-              className="inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-            >
+            <Button type="submit" disabled={saving}>
               {saving ? "Saving…" : "Save options"}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="secondary"
               disabled={saving}
               onClick={() => setJudgeModel(DEFAULT_JUDGE_MODEL)}
-              className="rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-surface-muted disabled:opacity-60"
             >
               Reset to default model
-            </button>
+            </Button>
           </div>
         </form>
       )}

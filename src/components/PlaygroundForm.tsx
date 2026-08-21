@@ -1,6 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { VerdictPanel, type VerdictView } from "./VerdictPanel";
 
 export type RubricOption = {
@@ -81,9 +85,6 @@ export function PlaygroundForm({ rubrics: initialRubrics }: { rubrics: RubricOpt
     }
   }
 
-  const fieldClass =
-    "w-full resize-y rounded-xl border border-border bg-background/70 px-3.5 py-2.5 text-[15px] leading-6 text-foreground outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-2 focus:ring-[var(--ring)] disabled:opacity-60";
-
   return (
     <div className="grid items-start gap-6 lg:grid-cols-2">
       <section className="rounded-2xl border border-border bg-surface p-6 shadow-[0_20px_50px_-32px_rgba(28,20,10,0.45)] sm:p-7">
@@ -101,9 +102,9 @@ export function PlaygroundForm({ rubrics: initialRubrics }: { rubrics: RubricOpt
         </div>
 
         <form onSubmit={onSubmit} className="flex flex-col gap-5">
-          <label className="flex flex-col gap-1.5" htmlFor="subject">
-            <span className="text-sm font-medium">Subject</span>
-            <textarea
+          <Label htmlFor="subject">
+            <span>Subject</span>
+            <Textarea
               id="subject"
               name="subject"
               required
@@ -111,74 +112,66 @@ export function PlaygroundForm({ rubrics: initialRubrics }: { rubrics: RubricOpt
               value={subject}
               onChange={(event) => setSubject(event.target.value)}
               rows={7}
-              className={fieldClass}
               placeholder="Output or resource to evaluate"
             />
-          </label>
+          </Label>
 
-          <label className="flex flex-col gap-1.5" htmlFor="context">
-            <span className="text-sm font-medium">
+          <Label htmlFor="context">
+            <span>
               Context <span className="font-normal text-muted">(optional)</span>
             </span>
-            <textarea
+            <Textarea
               id="context"
               name="context"
               disabled={pending}
               value={context}
               onChange={(event) => setContext(event.target.value)}
               rows={4}
-              className={fieldClass}
               placeholder="Prompt, sources, or surrounding material"
             />
-          </label>
+          </Label>
 
-          <label className="flex flex-col gap-1.5" htmlFor="reference">
-            <span className="text-sm font-medium">
+          <Label htmlFor="reference">
+            <span>
               Reference{" "}
               <span className="font-normal text-muted">(optional)</span>
             </span>
-            <textarea
+            <Textarea
               id="reference"
               name="reference"
               disabled={pending}
               value={reference}
               onChange={(event) => setReference(event.target.value)}
               rows={3}
-              className={fieldClass}
               placeholder="Gold answer or expected content"
             />
-          </label>
+          </Label>
 
-          <label className="flex flex-col gap-1.5" htmlFor="rubric">
-            <span className="text-sm font-medium">Evaluation prompt</span>
-            <select
+          <Label htmlFor="rubric">
+            <span>Evaluation prompt</span>
+            <Select
               id="rubric"
               name="rubric"
               disabled={pending}
               value={rubricId}
               onChange={(event) => setRubricId(event.target.value)}
-              className={fieldClass}
             >
               {rubrics.map((rubric) => (
                 <option key={rubric.id} value={rubric.id}>
                   {rubric.name}
                 </option>
               ))}
-            </select>
+            </Select>
             {selected?.description ? (
-              <span className="text-xs leading-5 text-muted">
+              <span className="text-xs font-normal leading-5 text-muted">
                 {selected.description}
               </span>
             ) : null}
-          </label>
+          </Label>
 
-          <button
-            type="submit"
-            disabled={pending}
-            className="mt-1 inline-flex items-center justify-center rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-fg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
-          >
+          <Button type="submit" disabled={pending} className="mt-1">
             {pending ? "Evaluating…" : "Evaluate"}
-          </button>
+          </Button>
         </form>
       </section>
 

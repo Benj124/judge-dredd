@@ -5,9 +5,11 @@ import { HistoryPanel } from "@/components/HistoryPanel";
 import { PlaygroundForm } from "@/components/PlaygroundForm";
 import { QuestionDashboard } from "@/components/QuestionDashboard";
 import { RubricEditor } from "@/components/RubricEditor";
+import { SynthesizePanel } from "@/components/SynthesizePanel";
 import { listDatasetRows, loadEvalCsv } from "@/lib/db/dataset";
 import { loadQuestions } from "@/lib/eval/questions";
 import { listAllRubrics } from "@/lib/eval/rubrics";
+import { listTextDocumentSummaries } from "@/lib/graph/store";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +36,7 @@ export default async function Home() {
       scale: criterion.scale,
     })),
   }));
+  const textDocuments = await listTextDocumentSummaries().catch(() => []);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -62,8 +65,9 @@ export default async function Home() {
             Judge the work. Tune the rules.
           </h1>
           <p className="mt-3 max-w-xl text-[15px] leading-7 text-muted">
-            Tabbed flows for fixtures, ad-hoc evaluate, evaluation prompts, and
-            agent options — with pass and fail marked clearly on every verdict.
+            Tabbed flows for fixtures, ad-hoc evaluate, evaluation prompts,
+            agent options, and question synthesis — with pass and fail marked
+            clearly on every verdict.
           </p>
         </div>
         <DashboardShell
@@ -85,6 +89,18 @@ export default async function Home() {
             batch: <BatchComparePanel />,
             rubrics: <RubricEditor />,
             agent: <AgenticOptionsForm />,
+            synthesize: (
+              <SynthesizePanel
+                documents={textDocuments.map((doc) => ({
+                  id: doc.id,
+                  slug: doc.slug,
+                  title: doc.title,
+                  canonicalUrl: doc.canonicalUrl,
+                  site: doc.site,
+                  charCount: doc.charCount,
+                }))}
+              />
+            ),
           }}
         />
       </main>

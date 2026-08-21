@@ -19,6 +19,14 @@ export function getXaiApiKeys(
   return [...new Set(keys)];
 }
 
+/** Second xAI key — reserved for synthesis / secondary agent paths. */
+export function getXaiApiKey2(
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  const key = env.XAI_API_KEY2?.trim();
+  return key || undefined;
+}
+
 const FALLBACK_MODELS = [
   "grok-4.20-0309-non-reasoning",
   "grok-4.3",
@@ -30,9 +38,10 @@ async function completeOnce(
   model: string,
   system: string,
   user: string,
+  timeoutMs = 45_000,
 ): Promise<string> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 45_000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(`${XAI_BASE_URL}/chat/completions`, {
       method: "POST",
@@ -66,7 +75,9 @@ async function completeOnce(
     return content;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("xAI request timed out after 45s");
+      throw new Error(
+        `xAI request timed out after ${Math.round(timeoutMs / 1000)}s`,
+      );
     }
     throw error;
   } finally {
@@ -221,3 +232,54 @@ export const xaiComplete: JudgeComplete = async ({ system, user, model }) => {
   }
   throw lastError ?? new Error("Judge call failed");
 };
+
+/**
+ * Chat completion using only XAI_API_KEY2 (synthesis agent).
+ * Does not fall back to XAI_API_KEY.
+ */
+export async function xaiCompleteKey2(input: {
+  system: string;
+  user: string;
+  model: string;
+  timeoutMs?: number;
+}): Promise<string> {
+  const apiKey = getXaiApiKey2();
+  if (!apiKey) {
+    throw new XaiConfigError(
+      "XAI_API_KEY2 is not set. Add the second key to .env for question synthesis.",
+    );
+  }
+
+  const models = [
+    input.model,
+    ...FALLBACK_MODELS.filter((item) => item !== input.model),
+  ];
+  const timeoutMs = input.timeoutMs ?? 120_000;
+  let lastError: Error | undefined;
+  for (const candidate of models) {
+    try {
+      return await completeOnce(
+        apiKey,
+        candidate,
+        input.system,
+        input.user,
+        timeoutMs,
+      );
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      const badKey = /Incorrect API key|invalid api key|Unauthorized/i.test(
+        lastError.message,
+      );
+      if (badKey) {
+        throw new XaiConfigError(
+          "Incorrect XAI_API_KEY2. Update the second key in .env from https://console.x.ai",
+        );
+      }
+      const retryable = /failed \((429|5\d\d)\)|timed out|404/.test(
+        lastError.message,
+      );
+      if (!retryable) throw lastError;
+    }
+  }
+  throw lastError ?? new Error("Synthesis call failed");
+}

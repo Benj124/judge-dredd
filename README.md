@@ -4,11 +4,13 @@ A local kit for ingesting a corpus, synthesizing LLM eval questions, reviewing g
 
 [![test](https://github.com/Benj124/judge-dredd/actions/workflows/test.yml/badge.svg)](https://github.com/Benj124/judge-dredd/actions/workflows/test.yml)
 
-The npm package and CLI are **`synthkit` / `synth`**. Live xAI keys are optional.
+The product and CLI are **`synthkit` / `synth`**. Install from this GitHub repo (the npm name `synthkit` is an unrelated 2016 package — do not `npm i synthkit`). Live xAI keys are optional.
 
 ## First try
 
 ```bash
+git clone https://github.com/Benj124/judge-dredd.git
+cd judge-dredd
 npm install
 cp .env.example .env
 docker compose up -d          # local Postgres (pgvector). Same as npm run db:up

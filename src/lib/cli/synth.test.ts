@@ -180,14 +180,14 @@ test("dispatchSynth pairwise returns A/B/tie without a database", async () => {
   }
 });
 
-test("npx synth help prints Usage; ingest prints a slug", () => {
-  const help = spawnSync("npx", ["synth", "help"], {
+test("npx judge-dredd help prints Usage; ingest prints a slug", () => {
+  const help = spawnSync("npx", ["judge-dredd", "help"], {
     cwd: process.cwd(),
     encoding: "utf8",
     env: { ...process.env, EVAL_LLM_STUB: "1", RAG_EMBED_STUB: "1" },
   });
   assert.equal(help.status, 0, help.stderr || help.stdout);
-  assert.match(help.stdout, /Usage:/);
+  assert.match(help.stdout, /Usage: npx judge-dredd/);
   assert.match(help.stdout, /ingest/);
   assert.match(help.stdout, /generate/);
   assert.match(help.stdout, /--n/);
@@ -202,7 +202,7 @@ test("npx synth help prints Usage; ingest prints a slug", () => {
   const ingest = spawnSync(
     "npx",
     [
-      "synth",
+      "judge-dredd",
       "ingest",
       "--file",
       "src/lib/graph/fixtures/corpus-note.md",
@@ -248,16 +248,16 @@ test("fork hygiene: MIT license, public package, no CFA dump", () => {
     false,
   );
   const readme = readFileSync(join(root, "README.md"), "utf8");
-  assert.match(readme, /synth ingest/);
-  assert.match(readme, /synth generate/);
-  assert.match(readme, /synth run/);
-  assert.match(readme, /synth export/);
+  assert.match(readme, /judge-dredd ingest/);
+  assert.match(readme, /judge-dredd generate/);
+  assert.match(readme, /judge-dredd run/);
+  assert.match(readme, /judge-dredd export/);
+  assert.match(readme, /npx judge-dredd help/);
   assert.match(readme, /jsonl/i);
   assert.match(readme, /docker compose up/);
   assert.match(readme, /demo/i);
   assert.match(readme, /^# synthkit/m);
-  assert.match(readme, /Do not `npm i synthkit`/);
-  assert.match(readme, /npm i judge-dredd/);
+  assert.match(readme, /npm i synthkit/);
   assert.doesNotMatch(readme, /^# Judge Dredd/m);
   assert.doesNotMatch(readme, /internal evaluation/i);
   assert.match(readme, /\[!\[test\]/);

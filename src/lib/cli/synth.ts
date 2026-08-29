@@ -81,7 +81,10 @@ export async function dispatchSynth(
   argv: string[],
   deps: SynthCliDeps = {},
 ): Promise<{ ok: true; command: string; payload: unknown }> {
-  const args = argv[0] === "synth" ? argv.slice(1) : argv;
+  const args =
+    argv[0] === "synth" || argv[0] === "synthkit" || argv[0] === "judge-dredd"
+      ? argv.slice(1)
+      : argv;
   const command = args[0]?.trim() || "";
   const rest = args.slice(1);
   const out = deps.stdout ?? ((text: string) => process.stdout.write(text));
@@ -89,7 +92,7 @@ export async function dispatchSynth(
 
   if (!command || command === "help" || command === "--help") {
     const help =
-      "Usage: synth ingest|generate|run|export|review|pairwise [...flags]\n" +
+      "Usage: npx judge-dredd ingest|generate|run|export|review|pairwise [...flags]\n" +
       "  ingest    --file PATH | --url URL | --title T --body B\n" +
       "            --gcp-data-store RESOURCE [--token T | --service-account JSON|PATH]\n" +
       "            --databricks-index NAME --host URL [--token PAT | --client-id ID --client-secret S]\n" +

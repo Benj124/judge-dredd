@@ -1,6 +1,6 @@
 {
   "name": "judge-dredd",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "license": "MIT",
   "description": "Local kit for ingesting corpora, synthesizing LLM eval questions, reviewing gold, and judging model answers.",

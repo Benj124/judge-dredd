@@ -4,7 +4,13 @@ A local kit for ingesting a corpus, synthesizing LLM eval questions, reviewing g
 
 [![test](https://github.com/Benj124/judge-dredd/actions/workflows/test.yml/badge.svg)](https://github.com/Benj124/judge-dredd/actions/workflows/test.yml)
 
-The product and CLI are **`synthkit` / `synth`**. On npm the package is **`judge-dredd`** (`npm i judge-dredd`). Do not `npm i synthkit` — that name is an unrelated 2016 package. Live xAI keys are optional.
+The product is **synthkit**. On npm the package and the command you type are **`judge-dredd`**:
+
+```bash
+npx judge-dredd help
+```
+
+Do not `npx synth` or `npm i synthkit` — those names are unrelated packages. After a clone, `npx synth` is the local CLI alias. Live xAI keys are optional.
 
 ## First try
 
@@ -18,7 +24,7 @@ npm run db:migrate
 npm run dev                   # dashboard at http://localhost:3000
 ```
 
-Or: `npx synth help`. Live xAI is optional — use stubs:
+Or from npm (no clone): `npx judge-dredd help`. Live xAI is optional — use stubs:
 
 ```
 EVAL_LLM_STUB=1     # judge / generate / synthesize without XAI_API_KEY
@@ -39,21 +45,21 @@ docker compose up -d
 npm run db:migrate
 
 # 1. Ingest (local fixture; swap --file for --url https://… when you have network)
-npx synth ingest --file src/lib/graph/fixtures/corpus-note.md
+npx judge-dredd ingest --file src/lib/graph/fixtures/corpus-note.md
 
 # 2–3. Synthesize 5 questions and keep them as gold (stub LLM)
-EVAL_LLM_STUB=1 npx synth generate --slug corpus-note --n 5 --keep
+EVAL_LLM_STUB=1 npx judge-dredd generate --slug corpus-note --n 5 --keep
 
 # 4. Run the judge / campaign
-EVAL_LLM_STUB=1 npx synth run --versionId <id>
+EVAL_LLM_STUB=1 npx judge-dredd run --versionId <id>
 
 # 5. Export gold JSONL
-npx synth export --versionId <id> --format jsonl
+npx judge-dredd export --versionId <id> --format jsonl
 ```
 
-`generate` prints `versionId`. `--keep` marks every synthesized item gold in the same step. To review later instead: omit `--keep`, then `npx synth review --versionId <id> --keep-all`. `npm run db:migrate` is idempotent; if an older install still has `vector(32)` embeddings it truncates `rag_chunks` and you re-ingest.
+`generate` prints `versionId`. `--keep` marks every synthesized item gold in the same step. To review later instead: omit `--keep`, then `npx judge-dredd review --versionId <id> --keep-all`. `npm run db:migrate` is idempotent; if an older install still has `vector(32)` embeddings it truncates `rag_chunks` and you re-ingest.
 
-CLI: `synth ingest`, `synth generate`, `synth review`, `synth run`, `synth export`, `synth pairwise`. Same as `npm run synth -- <command>`.
+CLI: `npx judge-dredd ingest|generate|review|run|export|pairwise`. After a clone, `npx synth` and `npm run synth --` are the same binary.
 
 ## Connectors (GCP data store, Databricks Unity Catalog)
 
@@ -61,21 +67,21 @@ Pull **articles** from a Vertex AI Search / Discovery Engine data store or a Dat
 
 ```bash
 # GCP: bearer token OR service-account JSON path (JWT → access token)
-npx synth ingest --gcp-data-store projects/P/locations/global/collections/default_collection/dataStores/DS \
+npx judge-dredd ingest --gcp-data-store projects/P/locations/global/collections/default_collection/dataStores/DS \
   --token "$GCP_ACCESS_TOKEN"
-npx synth ingest --gcp-data-store projects/P/locations/global/dataStores/DS \
+npx judge-dredd ingest --gcp-data-store projects/P/locations/global/dataStores/DS \
   --service-account ./sa.json   # or GOOGLE_APPLICATION_CREDENTIALS
 
 # Databricks: PAT OR service-principal client_id/client_secret
-npx synth ingest --databricks-index main.corpus.articles \
+npx judge-dredd ingest --databricks-index main.corpus.articles \
   --host https://your-workspace.cloud.databricks.com \
   --token "$DATABRICKS_TOKEN"
-npx synth ingest --databricks-index main.corpus.articles \
+npx judge-dredd ingest --databricks-index main.corpus.articles \
   --host https://your-workspace.cloud.databricks.com \
   --client-id "$DATABRICKS_CLIENT_ID" --client-secret "$DATABRICKS_CLIENT_SECRET" \
   --query "*" --text-column text --title-column title
 
-EVAL_LLM_STUB=1 npx synth generate --slug <slug-from-ingest> --n 5 --keep
+EVAL_LLM_STUB=1 npx judge-dredd generate --slug <slug-from-ingest> --n 5 --keep
 ```
 
 `GCP_ACCESS_TOKEN` / `GOOGLE_APPLICATION_CREDENTIALS` / `DATABRICKS_HOST` / `DATABRICKS_TOKEN` / `DATABRICKS_CLIENT_ID` / `DATABRICKS_CLIENT_SECRET` are documented in `.env.example`.

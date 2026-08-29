@@ -17,6 +17,7 @@ Use `EVAL_LLM_STUB=1` and `RAG_EMBED_STUB=1` so tests and the CLI golden path do
 - Eval pipeline: `src/lib/eval/`
 - Postgres store: `src/lib/db/`
 - Ingest / synthesize: `src/lib/graph/`
+- Connectors (GCP data store, Databricks Unity Catalog): `src/lib/connectors/`
 - RAG: `src/lib/rag/`
 - CLI: `src/lib/cli/synth.ts`
 - UI: `src/app/`, `src/components/`

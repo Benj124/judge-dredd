@@ -53,6 +53,31 @@ npx synth export --versionId <id> --format jsonl
 
 CLI: `synth ingest`, `synth generate`, `synth review`, `synth run`, `synth export`, `synth pairwise`. Same as `npm run synth -- <command>`.
 
+## Connectors (GCP data store, Databricks Unity Catalog)
+
+Pull **articles** from a Vertex AI Search / Discovery Engine data store or a Databricks Unity Catalog vector search index into the same `text_documents` table as `--file` / `--url`. Then `synth generate` / `synth run` on those slugs. Credentials are env vars or flags — never committed files.
+
+```bash
+# GCP: bearer token OR service-account JSON path (JWT → access token)
+npx synth ingest --gcp-data-store projects/P/locations/global/collections/default_collection/dataStores/DS \
+  --token "$GCP_ACCESS_TOKEN"
+npx synth ingest --gcp-data-store projects/P/locations/global/dataStores/DS \
+  --service-account ./sa.json   # or GOOGLE_APPLICATION_CREDENTIALS
+
+# Databricks: PAT OR service-principal client_id/client_secret
+npx synth ingest --databricks-index main.corpus.articles \
+  --host https://your-workspace.cloud.databricks.com \
+  --token "$DATABRICKS_TOKEN"
+npx synth ingest --databricks-index main.corpus.articles \
+  --host https://your-workspace.cloud.databricks.com \
+  --client-id "$DATABRICKS_CLIENT_ID" --client-secret "$DATABRICKS_CLIENT_SECRET" \
+  --query "*" --text-column text --title-column title
+
+EVAL_LLM_STUB=1 npx synth generate --slug <slug-from-ingest> --n 5 --keep
+```
+
+`GCP_ACCESS_TOKEN` / `GOOGLE_APPLICATION_CREDENTIALS` / `DATABRICKS_HOST` / `DATABRICKS_TOKEN` / `DATABRICKS_CLIENT_ID` / `DATABRICKS_CLIENT_SECRET` are documented in `.env.example`.
+
 ## Demo: Wikipedia whales
 
 Optional **demo** corpus (five public Wikipedia articles). Not required for the golden path.

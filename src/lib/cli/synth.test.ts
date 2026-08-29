@@ -195,6 +195,9 @@ test("npx synth help prints Usage; ingest prints a slug", () => {
   assert.match(help.stdout, /export/);
   assert.match(help.stdout, /jsonl/);
   assert.match(help.stdout, /pairwise/);
+  assert.match(help.stdout, /gcp-data-store/);
+  assert.match(help.stdout, /databricks-index/);
+  assert.match(help.stdout, /service-account/);
 
   const ingest = spawnSync(
     "npx",

@@ -27,6 +27,7 @@ MCP: root `.mcp.json` registers `next-devtools-mcp`. With `npm run dev` running,
 | Eval pipeline | `src/lib/eval/` | Judge/complete/parse, campaigns, rubrics, question fixtures, CLIs |
 | Database | `src/lib/db/` | Postgres pool, schema/migrate, evaluate run store, dataset CSV load |
 | RAG | `src/lib/rag/` | Embed, hybrid retrieve, LangGraph query, ground CLI |
+| Connectors | `src/lib/connectors/` | GCP Discovery Engine data stores and Databricks Unity Catalog vector indexes |
 | UI + routes | `src/app/` | App Router pages (`/`, `/batch`, `/history`) and `api/*` handlers |
 | Components | `src/components/` | Dashboard, playground, verdict, history, batch panels |
 

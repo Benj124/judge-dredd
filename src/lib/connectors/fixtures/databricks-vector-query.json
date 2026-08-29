@@ -1,0 +1,19 @@
+{
+  "manifest": {
+    "columns": [
+      { "name": "id" },
+      { "name": "title" },
+      { "name": "text" }
+    ]
+  },
+  "result": {
+    "row_count": 1,
+    "data_array": [
+      [
+        "hydrax-unity",
+        "Hydrax Unity article",
+        "The hydrax protocol feeds on polar ice in the Unity index."
+      ]
+    ]
+  }
+}

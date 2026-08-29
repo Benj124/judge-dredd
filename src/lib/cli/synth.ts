@@ -13,6 +13,11 @@ import { exportGoldVersion } from "../eval/datasetIo";
 import { DEFAULT_GENERATE_MODEL, generateJudgedText } from "../eval/generate";
 import { comparePairwise } from "../eval/pairwise";
 import type { JudgeComplete } from "../eval/types";
+import {
+  ingestDatabricksIndex,
+  ingestGcpDataStore,
+} from "../connectors/ingest";
+import type { ConnectorFetch } from "../connectors/types";
 import { ingestLocalFile, ingestPaste, ingestUrl } from "../graph/corpus";
 import {
   synthesizeAndPersist,
@@ -25,6 +30,7 @@ export type SynthCliDeps = {
   generate?: (job: { context?: string; subject: string }) => Promise<string>;
   stdout?: (text: string) => void;
   migrate?: () => Promise<void>;
+  fetch?: ConnectorFetch;
 };
 
 function argValue(argv: string[], flag: string): string | undefined {
@@ -85,6 +91,9 @@ export async function dispatchSynth(
     const help =
       "Usage: synth ingest|generate|run|export|review|pairwise [...flags]\n" +
       "  ingest    --file PATH | --url URL | --title T --body B\n" +
+      "            --gcp-data-store RESOURCE [--token T | --service-account JSON|PATH]\n" +
+      "            --databricks-index NAME --host URL [--token PAT | --client-id ID --client-secret S]\n" +
+      "            [--query TEXT] [--text-column COL] [--title-column COL]\n" +
       "  generate  --slug SLUG [--n 5] [--keep]\n" +
       "  review    --itemId ID [--action keep|edit|reject] | --versionId ID --keep-all\n" +
       "  run       --versionId ID\n" +
@@ -105,6 +114,68 @@ export async function dispatchSynth(
     const title = argValue(rest, "--title");
     const body = argValue(rest, "--body");
     const slug = argValue(rest, "--slug");
+    const gcpStore = argValue(rest, "--gcp-data-store");
+    const databricksIndex = argValue(rest, "--databricks-index");
+    const host = argValue(rest, "--host") ?? process.env.DATABRICKS_HOST;
+    const flagToken = argValue(rest, "--token");
+    const serviceAccount =
+      argValue(rest, "--service-account") ??
+      process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const clientId =
+      argValue(rest, "--client-id") ?? process.env.DATABRICKS_CLIENT_ID;
+    const clientSecret =
+      argValue(rest, "--client-secret") ?? process.env.DATABRICKS_CLIENT_SECRET;
+    const query = argValue(rest, "--query");
+    const textColumn = argValue(rest, "--text-column");
+    const titleColumn = argValue(rest, "--title-column");
+    if (gcpStore) {
+      const result = await ingestGcpDataStore({
+        dataStore: gcpStore,
+        accessToken: flagToken ?? process.env.GCP_ACCESS_TOKEN,
+        serviceAccount,
+        fetch: deps.fetch,
+      });
+      const payload = {
+        command: "ingest",
+        source: result.source,
+        slugs: result.documents.map((doc) => doc.slug),
+        documents: result.documents.map((doc) => ({
+          slug: doc.slug,
+          title: doc.title,
+          chars: doc.fullText.length,
+        })),
+      };
+      out(JSON.stringify(payload, null, 2) + "\n");
+      return { ok: true, command: "ingest", payload };
+    }
+    if (databricksIndex) {
+      if (!host) {
+        throw new Error("synth ingest --databricks-index requires --host or DATABRICKS_HOST");
+      }
+      const result = await ingestDatabricksIndex({
+        host,
+        index: databricksIndex,
+        token: flagToken ?? process.env.DATABRICKS_TOKEN,
+        clientId,
+        clientSecret,
+        query,
+        textColumn,
+        titleColumn,
+        fetch: deps.fetch,
+      });
+      const payload = {
+        command: "ingest",
+        source: result.source,
+        slugs: result.documents.map((doc) => doc.slug),
+        documents: result.documents.map((doc) => ({
+          slug: doc.slug,
+          title: doc.title,
+          chars: doc.fullText.length,
+        })),
+      };
+      out(JSON.stringify(payload, null, 2) + "\n");
+      return { ok: true, command: "ingest", payload };
+    }
     if (file) {
       const doc = await ingestLocalFile(file);
       const payload = {
@@ -134,7 +205,9 @@ export async function dispatchSynth(
       out(JSON.stringify(payload, null, 2) + "\n");
       return { ok: true, command: "ingest", payload };
     }
-    throw new Error("synth ingest requires --file, --url, or --title and --body");
+    throw new Error(
+      "synth ingest requires --file, --url, --title and --body, --gcp-data-store, or --databricks-index",
+    );
   }
 
   if (command === "generate") {

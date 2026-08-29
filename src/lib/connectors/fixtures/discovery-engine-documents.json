@@ -1,0 +1,21 @@
+{
+  "documents": [
+    {
+      "name": "projects/demo/locations/global/collections/default_collection/dataStores/articles/branches/default_branch/documents/zinnium-vertex",
+      "id": "zinnium-vertex",
+      "structData": {
+        "title": "Zinnium Vertex article",
+        "body": "The zinnium crystal glows at midnight in the Vertex store."
+      }
+    },
+    {
+      "name": "projects/demo/locations/global/collections/default_collection/dataStores/articles/branches/default_branch/documents/unstructured-note",
+      "id": "unstructured-note",
+      "content": {
+        "mimeType": "text/plain",
+        "uri": "https://example.invalid/vertex/unstructured-note.txt",
+        "rawBytes": "VW5zdHJ1Y3R1cmVkIGh5ZHJheCBub3RlcyBsaXZlIGluIERpc2NvdmVyeSBFbmdpbmUgY29udGVudC5yYXdCeXRlcy4="
+      }
+    }
+  ]
+}

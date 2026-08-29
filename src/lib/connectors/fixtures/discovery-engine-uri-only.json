@@ -1,0 +1,12 @@
+{
+  "documents": [
+    {
+      "name": "projects/demo/locations/global/collections/default_collection/dataStores/articles/branches/default_branch/documents/quorblax-gcs",
+      "id": "quorblax-gcs",
+      "content": {
+        "mimeType": "text/plain",
+        "uri": "gs://synthkit-corpus/articles/quorblax.txt"
+      }
+    }
+  ]
+}

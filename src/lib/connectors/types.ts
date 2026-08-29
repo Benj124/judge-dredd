@@ -13,6 +13,8 @@ export type MappedCorpusDoc = {
   slug: string;
   canonicalUrl: string;
   sourceId: string;
+  /** Discovery Engine content.uri when body is not inline (gs:// or https). */
+  contentUri?: string;
 };
 
 export class ConnectorAuthError extends Error {}

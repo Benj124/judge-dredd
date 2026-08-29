@@ -84,8 +84,7 @@ export function mapDiscoveryEngineDocument(doc: unknown): MappedCorpusDoc | null
   if (!body && content) {
     body =
       decodeRawBytes(content.rawBytes) ||
-      (typeof content.html === "string" ? content.html.trim() : "") ||
-      (typeof content.uri === "string" ? "" : "");
+      (typeof content.html === "string" ? content.html.trim() : "");
   }
   if (!body && structData) {
     const leftover = { ...structData };
@@ -96,7 +95,11 @@ export function mapDiscoveryEngineDocument(doc: unknown): MappedCorpusDoc | null
       .join("\n");
     body = joined;
   }
-  if (!body.trim()) return null;
+  const contentUri =
+    content && typeof content.uri === "string" && content.uri.trim()
+      ? content.uri.trim()
+      : undefined;
+  if (!body.trim() && !contentUri) return null;
 
   const id =
     (typeof record.id === "string" && record.id.trim()) ||
@@ -116,6 +119,7 @@ export function mapDiscoveryEngineDocument(doc: unknown): MappedCorpusDoc | null
     slug: slugify(id),
     canonicalUrl: uri,
     sourceId: id,
+    contentUri: body.trim() ? undefined : contentUri,
   };
 }
 

@@ -1,3 +1,4 @@
+import { htmlToPlainText } from "../graph/htmlText";
 import { gcpAccessToken, bearerHeaders, type GoogleServiceAccount } from "./auth";
 import { mapDiscoveryEngineList } from "./mapText";
 import {
@@ -6,6 +7,62 @@ import {
   type ConnectorFetch,
   type MappedCorpusDoc,
 } from "./types";
+
+/** gs://bucket/object → GCS JSON API alt=media; https URIs pass through. */
+export function contentUriToFetchUrl(uri: string): string {
+  const trimmed = uri.trim();
+  if (trimmed.startsWith("gs://")) {
+    const rest = trimmed.slice("gs://".length);
+    const slash = rest.indexOf("/");
+    if (slash < 0) {
+      throw new Error(`Invalid gs:// URI: ${uri}`);
+    }
+    const bucket = rest.slice(0, slash);
+    const object = rest.slice(slash + 1);
+    return (
+      `https://storage.googleapis.com/storage/v1/b/${encodeURIComponent(bucket)}` +
+      `/o/${encodeURIComponent(object)}?alt=media`
+    );
+  }
+  return trimmed;
+}
+
+function bodyFromFetchedContent(bodyText: string): string {
+  const trimmed = bodyText.trim();
+  if (!trimmed) return "";
+  if (/<[a-z][\s\S]*>/i.test(trimmed)) {
+    const plain = htmlToPlainText(trimmed).fullText.trim();
+    return plain || trimmed;
+  }
+  return trimmed;
+}
+
+async function hydrateContentUris(
+  docs: MappedCorpusDoc[],
+  fetchFn: ConnectorFetch,
+  headers: Record<string, string>,
+): Promise<MappedCorpusDoc[]> {
+  const hydrated: MappedCorpusDoc[] = [];
+  for (const doc of docs) {
+    if (doc.body.trim()) {
+      hydrated.push(doc);
+      continue;
+    }
+    if (!doc.contentUri) continue;
+    const url = contentUriToFetchUrl(doc.contentUri);
+    const response = await fetchFn(url, { method: "GET", headers });
+    requireOk(url, response.status, response.bodyText);
+    const body = bodyFromFetchedContent(response.bodyText);
+    if (!body) continue;
+    hydrated.push({
+      ...doc,
+      body,
+      canonicalUrl: doc.contentUri,
+      contentUri: undefined,
+    });
+  }
+  return hydrated;
+}
 
 export function discoveryEngineDocumentsUrl(dataStore: string): string {
   let resource = dataStore.trim().replace(/^\/+|\/+$/g, "");
@@ -60,9 +117,14 @@ export async function listGcpDataStoreDocuments(options: {
   } catch {
     throw new Error("GCP data store returned non-JSON");
   }
+  const documents = await hydrateContentUris(
+    mapDiscoveryEngineList(payload),
+    fetchFn,
+    headers,
+  );
   return {
     url,
     authorization: headers.Authorization,
-    documents: mapDiscoveryEngineList(payload),
+    documents,
   };
 }

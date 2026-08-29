@@ -60,6 +60,68 @@ test("GCP data-store fixture maps structData and content.rawBytes into stored fu
   }
 });
 
+test("GCP unstructured content.uri-only docs fetch GCS alt=media with the same Bearer", async () => {
+  await migrate();
+  const listFixture = readFileSync(
+    join(FIXTURES, "discovery-engine-uri-only.json"),
+    "utf8",
+  );
+  const objectProse =
+    "Quorblax megafauna nest only in the GCS object behind content.uri.";
+  assert.match(listFixture, /gs:\/\/synthkit-corpus\/articles\/quorblax\.txt/);
+  assert.doesNotMatch(listFixture, /Quorblax megafauna/);
+  assert.doesNotMatch(listFixture, /rawBytes/);
+  const slugs = ["quorblax-gcs"];
+  const fetches: Array<{ url: string; authorization?: string }> = [];
+  try {
+    const result = await ingestGcpDataStore({
+      dataStore:
+        "projects/demo/locations/global/collections/default_collection/dataStores/articles",
+      accessToken: "gcp-raw-bearer",
+      serviceAccount: "/this/path/does-not-exist-sa.json",
+      fetch: async (url, init) => {
+        fetches.push({ url, authorization: init?.headers?.Authorization });
+        if (url.includes("discoveryengine.googleapis.com")) {
+          return { status: 200, bodyText: listFixture };
+        }
+        if (url.includes("storage.googleapis.com") && url.includes("alt=media")) {
+          assert.equal(init?.headers?.Authorization, "Bearer gcp-raw-bearer");
+          return { status: 200, bodyText: objectProse };
+        }
+        throw new Error(`unexpected fetch ${url}`);
+      },
+    });
+    assert.equal(result.documents.length, 1);
+    assert.equal(result.documents[0].slug, "quorblax-gcs");
+    assert.match(result.documents[0].fullText, /Quorblax megafauna nest only in the GCS object/);
+    assert.ok(
+      fetches.some(
+        (row) =>
+          row.url.includes("/storage/v1/b/synthkit-corpus/o/") &&
+          row.url.includes("alt=media") &&
+          row.authorization === "Bearer gcp-raw-bearer",
+      ),
+    );
+  } finally {
+    await cleanupSlugs(slugs);
+  }
+});
+
+test("invalid GOOGLE_APPLICATION_CREDENTIALS path is ignored when a bearer token is set", async () => {
+  await assert.rejects(
+    () =>
+      ingestGcpDataStore({
+        dataStore:
+          "projects/demo/locations/global/dataStores/articles",
+        serviceAccount: "/this/path/does-not-exist-sa.json",
+        fetch: async () => {
+          throw new Error("fetch must not run");
+        },
+      }),
+    /ENOENT|no such file/i,
+  );
+});
+
 test("Databricks vector-index fixture maps the configured text column into stored full text", async () => {
   await migrate();
   const fixture = readFileSync(

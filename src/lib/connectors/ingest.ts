@@ -56,12 +56,14 @@ export async function ingestGcpDataStore(options: {
   fetch?: ConnectorFetch;
   pool?: Pool;
 }): Promise<ConnectorIngestResult> {
+  const accessToken = options.accessToken?.trim() || undefined;
   const listed = await listGcpDataStoreDocuments({
     dataStore: options.dataStore,
-    accessToken: options.accessToken,
-    serviceAccount: options.serviceAccount
-      ? parseServiceAccountJson(options.serviceAccount)
-      : undefined,
+    accessToken,
+    serviceAccount:
+      !accessToken && options.serviceAccount
+        ? parseServiceAccountJson(options.serviceAccount)
+        : undefined,
     fetch: options.fetch,
   });
   const documents = await persistMapped(

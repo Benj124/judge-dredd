@@ -35,7 +35,6 @@ test("default local database identifier is not judge_dredd", () => {
     "docker-compose.yml",
     "scripts/db-up.sh",
     ".github/workflows/test.yml",
-    "README.md",
   ];
   for (const rel of files) {
     const text = readFileSync(join(root, rel), "utf8");
@@ -44,12 +43,9 @@ test("default local database identifier is not judge_dredd", () => {
       /judge_dredd/,
       `${rel} must not use judge_dredd as the default DB name`,
     );
-    if (rel !== "README.md") {
-      assert.match(text, /synthkit/, `${rel} should mention synthkit`);
-    }
+    assert.match(text, /synthkit/, `${rel} should mention synthkit`);
   }
-  assert.match(
-    readFileSync(join(root, "README.md"), "utf8"),
-    /5432\/synthkit/,
-  );
+  const readme = readFileSync(join(root, "README.md"), "utf8");
+  assert.match(readme, /5432\/synthkit/);
+  assert.doesNotMatch(readme, /5432\/judge_dredd/);
 });

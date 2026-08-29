@@ -1,5 +1,5 @@
 {
-  "name": "synthkit",
+  "name": "judge-dredd",
   "version": "0.1.0",
   "private": false,
   "license": "MIT",
@@ -26,7 +26,8 @@
   },
   "bin": {
     "synth": "bin/synth",
-    "synthkit": "bin/synth"
+    "synthkit": "bin/synth",
+    "judge-dredd": "bin/synth"
   },
   "files": [
     "bin/synth",

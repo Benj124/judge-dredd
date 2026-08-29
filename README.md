@@ -4,7 +4,7 @@ A local kit for ingesting a corpus, synthesizing LLM eval questions, reviewing g
 
 [![test](https://github.com/Benj124/judge-dredd/actions/workflows/test.yml/badge.svg)](https://github.com/Benj124/judge-dredd/actions/workflows/test.yml)
 
-The product and CLI are **`synthkit` / `synth`**. Install from this GitHub repo (the npm name `synthkit` is an unrelated 2016 package — do not `npm i synthkit`). Live xAI keys are optional.
+The product and CLI are **`synthkit` / `synth`**. On npm the package is **`judge-dredd`** (`npm i judge-dredd`). Do not `npm i synthkit` — that name is an unrelated 2016 package. Live xAI keys are optional.
 
 ## First try
 

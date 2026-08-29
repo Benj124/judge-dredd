@@ -140,31 +140,44 @@ test("EVAL_LLM_STUB generate --n 5 keeps five questions after dedup", async () =
 });
 
 test("dispatchSynth pairwise returns A/B/tie without a database", async () => {
-  const chunks: string[] = [];
-  const result = await dispatchSynth(
-    [
-      "pairwise",
-      "--a",
-      "Paris is the capital of France.",
-      "--b",
-      "Lyon is the capital of France.",
-      "--context",
-      "What is the capital of France?",
-    ],
-    {
-      migrate: async () => {
-        throw new Error("pairwise must not require migrate");
+  const cases: Array<{ preference: "A" | "B" | "tie"; rationale: string }> = [
+    { preference: "A", rationale: "A is factually correct." },
+    { preference: "B", rationale: "B is the better answer." },
+    { preference: "tie", rationale: "Both answers are equivalent." },
+  ];
+  for (const expected of cases) {
+    const chunks: string[] = [];
+    const result = await dispatchSynth(
+      [
+        "pairwise",
+        "--a",
+        "Paris is the capital of France.",
+        "--b",
+        "Lyon is the capital of France.",
+        "--context",
+        "What is the capital of France?",
+      ],
+      {
+        migrate: async () => {
+          throw new Error("pairwise must not require migrate");
+        },
+        judge: async () =>
+          JSON.stringify({
+            preference: expected.preference,
+            rationale: expected.rationale,
+          }),
+        stdout: (text) => chunks.push(text),
       },
-      judge: async () =>
-        JSON.stringify({ preference: "A", rationale: "A is factually correct." }),
-      stdout: (text) => chunks.push(text),
-    },
-  );
-  assert.equal(result.command, "pairwise");
-  const payload = result.payload as { preference: string; rationale: string };
-  assert.equal(payload.preference, "A");
-  assert.match(payload.rationale, /correct/i);
-  assert.match(chunks.join(""), /"preference": "A"/);
+    );
+    assert.equal(result.command, "pairwise");
+    const payload = result.payload as { preference: string; rationale: string };
+    assert.equal(payload.preference, expected.preference);
+    assert.equal(payload.rationale, expected.rationale);
+    assert.match(
+      chunks.join(""),
+      new RegExp(`"preference": "${expected.preference}"`),
+    );
+  }
 });
 
 test("npx synth help prints Usage; ingest prints a slug", () => {

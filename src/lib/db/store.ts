@@ -10,6 +10,9 @@ export type EvaluateRunInput = {
   reference?: string | null;
   campaignId?: string | null;
   fixtureId?: string | null;
+  seed?: string | null;
+  modelId?: string | null;
+  datasetVersion?: string | null;
   verdict: Verdict;
 };
 
@@ -21,9 +24,21 @@ export type StoredEvaluateRun = {
   reference: string | null;
   campaignId: string | null;
   fixtureId: string | null;
+  seed: string | null;
+  modelId: string | null;
+  datasetVersion: string | null;
   rubricId: string;
   rubricVersion: string;
   verdict: Verdict;
+};
+
+export type CampaignMeta = {
+  id: string;
+  seed: string | null;
+  modelId: string | null;
+  rubricVersion: string | null;
+  datasetVersion: string | null;
+  createdAt: string;
 };
 
 export type AgenticOptions = {
@@ -43,6 +58,9 @@ type RunRow = {
   reference: string | null;
   campaign_id: string | null;
   fixture_id: string | null;
+  seed: string | null;
+  model_id: string | null;
+  dataset_version: string | null;
   rubric_id: string;
   rubric_version: string;
   scores: CriterionScore[];
@@ -50,6 +68,10 @@ type RunRow = {
   passed: boolean | null;
   rationale: string;
 };
+
+const RUN_COLUMNS = `id, created_at, subject, context, reference,
+            campaign_id, fixture_id, seed, model_id, dataset_version,
+            rubric_id, rubric_version, scores, overall, passed, rationale`;
 
 type RubricRow = {
   id: string;
@@ -79,6 +101,9 @@ function toStored(row: RunRow): StoredEvaluateRun {
     reference: row.reference,
     campaignId: row.campaign_id,
     fixtureId: row.fixture_id,
+    seed: row.seed ?? null,
+    modelId: row.model_id ?? null,
+    datasetVersion: row.dataset_version ?? null,
     rubricId: row.rubric_id,
     rubricVersion: row.rubric_version,
     verdict: {
@@ -112,17 +137,19 @@ export async function saveEvaluateRun(
   const result = await pool.query<RunRow>(
     `INSERT INTO evaluate_runs (
        subject, context, reference, campaign_id, fixture_id,
+       seed, model_id, dataset_version,
        rubric_id, rubric_version, scores, overall, passed, rationale
-     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9, $10, $11)
-     RETURNING id, created_at, subject, context, reference,
-               campaign_id, fixture_id, rubric_id, rubric_version,
-               scores, overall, passed, rationale`,
+     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11::jsonb, $12, $13, $14)
+     RETURNING ${RUN_COLUMNS}`,
     [
       subject,
       input.context ?? null,
       input.reference ?? null,
       input.campaignId ?? null,
       input.fixtureId ?? null,
+      input.seed ?? null,
+      input.modelId ?? null,
+      input.datasetVersion ?? null,
       verdict.rubricId,
       verdict.rubricVersion,
       JSON.stringify(verdict.scores),
@@ -139,9 +166,7 @@ export async function getEvaluateRun(
   pool: Pool = getPool(),
 ): Promise<StoredEvaluateRun | null> {
   const result = await pool.query<RunRow>(
-    `SELECT id, created_at, subject, context, reference,
-            campaign_id, fixture_id, rubric_id, rubric_version,
-            scores, overall, passed, rationale
+    `SELECT ${RUN_COLUMNS}
      FROM evaluate_runs
      WHERE id = $1`,
     [id],
@@ -198,9 +223,7 @@ export async function listEvaluateRuns(
   pool: Pool = getPool(),
 ): Promise<StoredEvaluateRun[]> {
   const result = await pool.query<RunRow>(
-    `SELECT id, created_at, subject, context, reference,
-            campaign_id, fixture_id, rubric_id, rubric_version,
-            scores, overall, passed, rationale
+    `SELECT ${RUN_COLUMNS}
      FROM evaluate_runs
      WHERE ($1::text IS NULL OR rubric_id = $1)
        AND ($2::boolean IS NULL OR passed IS NOT DISTINCT FROM $2)
@@ -223,15 +246,87 @@ export async function listCampaignEvaluateRuns(
   pool: Pool = getPool(),
 ): Promise<StoredEvaluateRun[]> {
   const result = await pool.query<RunRow>(
-    `SELECT id, created_at, subject, context, reference,
-            campaign_id, fixture_id, rubric_id, rubric_version,
-            scores, overall, passed, rationale
+    `SELECT ${RUN_COLUMNS}
      FROM evaluate_runs
      WHERE campaign_id = $1
      ORDER BY created_at ASC`,
     [campaignId],
   );
   return result.rows.map(toStored);
+}
+
+export async function saveCampaignMeta(
+  input: {
+    id: string;
+    seed?: string | null;
+    modelId?: string | null;
+    rubricVersion?: string | null;
+    datasetVersion?: string | null;
+  },
+  pool: Pool = getPool(),
+): Promise<CampaignMeta> {
+  const result = await pool.query<{
+    id: string;
+    seed: string | null;
+    model_id: string | null;
+    rubric_version: string | null;
+    dataset_version: string | null;
+    created_at: Date;
+  }>(
+    `INSERT INTO campaigns (id, seed, model_id, rubric_version, dataset_version)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (id) DO UPDATE SET
+       seed = EXCLUDED.seed,
+       model_id = EXCLUDED.model_id,
+       rubric_version = EXCLUDED.rubric_version,
+       dataset_version = EXCLUDED.dataset_version
+     RETURNING id, seed, model_id, rubric_version, dataset_version, created_at`,
+    [
+      input.id,
+      input.seed ?? null,
+      input.modelId ?? null,
+      input.rubricVersion ?? null,
+      input.datasetVersion ?? null,
+    ],
+  );
+  const row = result.rows[0];
+  return {
+    id: row.id,
+    seed: row.seed,
+    modelId: row.model_id,
+    rubricVersion: row.rubric_version,
+    datasetVersion: row.dataset_version,
+    createdAt: row.created_at.toISOString(),
+  };
+}
+
+export async function getCampaignMeta(
+  id: string,
+  pool: Pool = getPool(),
+): Promise<CampaignMeta | null> {
+  const result = await pool.query<{
+    id: string;
+    seed: string | null;
+    model_id: string | null;
+    rubric_version: string | null;
+    dataset_version: string | null;
+    created_at: Date;
+  }>(
+    `SELECT id, seed, model_id, rubric_version, dataset_version, created_at
+     FROM campaigns
+     WHERE id = $1`,
+    [id],
+  );
+  if (result.rows.length === 0) return null;
+  const row = result.rows[0];
+  return {
+    id: row.id,
+    seed: row.seed,
+    modelId: row.model_id,
+    rubricVersion: row.rubric_version,
+    datasetVersion: row.dataset_version,
+    createdAt: row.created_at.toISOString(),
+  };
 }
 
 export async function saveStoredRubric(

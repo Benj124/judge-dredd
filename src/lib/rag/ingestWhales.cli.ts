@@ -1,7 +1,8 @@
 import { migrate } from "../db/migrate";
 import { closePool } from "../db/pool";
 import { getEmbedder, stubEmbed } from "./embed";
-import { ingestWhaleDocumentsToRag } from "./ingestDocuments";
+import { ingestStoredDocumentsToRag } from "./ingestDocuments";
+import { WHALE_WIKIPEDIA_SEEDS } from "../graph/seeds";
 import { hybridRetrieve } from "./retrieve";
 
 async function main() {
@@ -15,7 +16,10 @@ async function main() {
     `Chunking + embedding whale text_documents into rag_chunks (embed=${mode})…\n`,
   );
 
-  const result = await ingestWhaleDocumentsToRag({ embed });
+  const result = await ingestStoredDocumentsToRag({
+    embed,
+    slugs: WHALE_WIKIPEDIA_SEEDS.map((seed) => seed.slug),
+  });
   for (const row of result.bySlug) {
     process.stdout.write(
       `  ${row.slug}: ${row.chunks} chunks → ${row.source}\n`,

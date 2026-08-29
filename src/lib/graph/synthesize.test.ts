@@ -140,11 +140,19 @@ test("synthesizeHttp precheck and success with stub complete", async () => {
     ok: boolean;
     questions: Array<{ question: string }>;
     slug: string;
+    versionId: string;
+    items: Array<{ is_gold: boolean; review_status: string; source_slug: string }>;
   };
   assert.equal(body.ok, true);
   assert.equal(body.slug, slug);
   assert.equal(body.questions.length, 1);
   assert.match(body.questions[0].question, /HTTP whale/i);
+  assert.ok(body.versionId);
+  assert.equal(body.items.length, 1);
+  assert.equal(body.items[0].is_gold, false);
+  assert.equal(body.items[0].review_status, "pending");
+  assert.equal(body.items[0].source_slug, slug);
 
+  await getPool().query(`DELETE FROM datasets WHERE slug = $1`, [`synth-${slug}`]);
   await getPool().query(`DELETE FROM text_documents WHERE slug = $1`, [slug]);
 });

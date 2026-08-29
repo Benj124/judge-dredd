@@ -6,6 +6,7 @@ import { upsertTextDocument } from "../graph/store";
 import { stubEmbed } from "./embed";
 import {
   documentRagSource,
+  ingestStoredDocumentsToRag,
   ingestTextDocumentsToRag,
   loadWhaleTextDocuments,
 } from "./ingestDocuments";
@@ -80,6 +81,62 @@ test("ingestTextDocumentsToRag multi-chunks, embeds, and hybrid retrieve hits di
   // Idempotent re-run replaces rather than duplicating.
   const second = await ingestTextDocumentsToRag({
     documents: [doc],
+    embed: stubEmbed,
+    pool,
+    chunkOptions: { maxChars: 220, overlapChars: 40 },
+  });
+  assert.equal(second.chunks, first.chunks);
+  assert.ok(second.deleted >= first.chunks);
+  const count2 = await pool.query<{ n: string }>(
+    `SELECT count(*)::text AS n FROM rag_chunks WHERE source = $1`,
+    [doc.canonicalUrl],
+  );
+  assert.equal(Number(count2.rows[0].n), first.chunks);
+
+  await pool.query(`DELETE FROM rag_chunks WHERE source = $1`, [doc.canonicalUrl]);
+  await pool.query(`DELETE FROM text_documents WHERE slug = $1`, [slug]);
+});
+
+test("generic documents→chunks RAG ingest does not require whale seeds", async () => {
+  await migrate();
+  const pool = getPool();
+  const slug = `briefing-rag-${Date.now()}`;
+  const marker = `hydrax${Date.now()}`;
+  const paragraphs = [
+    `The operator briefing describes ${marker} containment. Distinctive prose for retrieve.`,
+    "Secondary paragraph about shift handoff notes and radio codes used on the floor.",
+    "Tertiary paragraph about inventory of spare parts stored in the north warehouse.",
+    "Fourth paragraph about safety drills scheduled every other Thursday afternoon.",
+    "Fifth paragraph about after-action reports filed in the local records cabinet.",
+  ];
+  const fullText = paragraphs.join("\n\n");
+  const doc = await upsertTextDocument({
+    slug,
+    title: "Operator briefing",
+    canonicalUrl: `https://example.test/briefings/${slug}`,
+    fullText,
+    site: "example.test",
+    meta: { source: "test", corpus: "generic" },
+  });
+
+  const first = await ingestStoredDocumentsToRag({
+    slugs: [slug],
+    embed: stubEmbed,
+    pool,
+    chunkOptions: { maxChars: 220, overlapChars: 40 },
+  });
+  assert.equal(first.documents, 1);
+  assert.ok(first.chunks >= 2, `expected multiple chunks, got ${first.chunks}`);
+  assert.doesNotMatch(slug, /whale/);
+
+  const passages = await hybridRetrieve(
+    `Where is ${marker} containment described?`,
+    { embed: stubEmbed, pool, limit: 12 },
+  );
+  assert.ok(passages.some((p) => p.text.includes(marker)));
+
+  const second = await ingestStoredDocumentsToRag({
+    slugs: [slug],
     embed: stubEmbed,
     pool,
     chunkOptions: { maxChars: 220, overlapChars: 40 },

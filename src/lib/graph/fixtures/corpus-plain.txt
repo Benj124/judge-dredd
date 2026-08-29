@@ -1,0 +1,4 @@
+Plaintext corpus title
+
+This local txt file mentions the quorblax megafauna for ingest tests.
+A second line keeps the document long enough to store.

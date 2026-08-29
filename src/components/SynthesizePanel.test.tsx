@@ -8,6 +8,7 @@ import {
   DEFAULT_SYNTHESIS_PROMPT,
   SynthesizePanel,
   type SynthesizeDocument,
+  type SynthesizePanelItem,
 } from "./SynthesizePanel";
 import { DashboardShell } from "./DashboardShell";
 
@@ -30,6 +31,17 @@ const sampleDocs: SynthesizeDocument[] = [
   },
 ];
 
+const samplePendingItems: SynthesizePanelItem[] = [
+  {
+    id: "item-pending-1",
+    question: "How long is a blue whale?",
+    expected_facts: ["Up to 30 metres."],
+    difficulty: "easy",
+    review_status: "pending",
+    is_gold: false,
+  },
+];
+
 test("SynthesizePanel renders document rows and an editable multi-line prompt", () => {
   const html = renderToStaticMarkup(
     createElement(SynthesizePanel, { documents: sampleDocs }),
@@ -49,6 +61,35 @@ test("SynthesizePanel renders document rows and an editable multi-line prompt", 
     "prompt default text should appear in the textarea markup",
   );
   assert.match(html, /data-testid="synthesize-generate"/);
+  assert.match(html, /data-testid="synthesize-run-campaign"/);
+  assert.match(html, /data-testid="synthesize-mode"/);
+  assert.match(html, /data-testid="synthesize-template"/);
+  assert.match(html, /id="synthesis-mode"/);
+  assert.match(html, /id="synthesis-template"/);
+  assert.match(html, /grounded_qa/);
+  assert.match(html, /retrieval_gold/);
+  assert.match(html, /multi_hop/);
+});
+
+test("SynthesizePanel review and campaign controls are in the markup", () => {
+  const html = renderToStaticMarkup(
+    createElement(SynthesizePanel, {
+      documents: sampleDocs,
+      initialItems: samplePendingItems,
+      initialVersionId: "version-test-1",
+    }),
+  );
+
+  assert.match(html, /data-testid="synthesize-keep"/);
+  assert.match(html, /data-testid="synthesize-edit"/);
+  assert.match(html, /data-testid="synthesize-reject"/);
+  assert.match(html, />Keep</);
+  assert.match(html, />Edit</);
+  assert.match(html, />Reject</);
+  assert.match(html, /data-testid="synthesize-run-campaign"/);
+  assert.match(html, /Run campaign from gold/);
+  assert.match(html, /data-testid="synthesize-export-jsonl"/);
+  assert.match(html, /data-testid="synthesize-export-csv"/);
 });
 
 test("SynthesizePanel empty state does not invent hard-coded document rows", () => {
@@ -87,6 +128,7 @@ test("home page wires listTextDocumentSummaries into SynthesizePanel", () => {
     "utf8",
   );
   assert.match(page, /listTextDocumentSummaries/);
+  assert.match(page, /listSynthesisTemplates/);
   assert.match(page, /SynthesizePanel/);
   assert.match(page, /synthesize:/);
 });
@@ -97,6 +139,8 @@ test("synthesize panel posts to the KEY2-backed API route", () => {
     "utf8",
   );
   assert.match(panel, /\/api\/synthesize/);
+  assert.match(panel, /\/api\/datasets\/review/);
+  assert.match(panel, /\/api\/datasets\/campaign/);
   assert.match(panel, /XAI_API_KEY2/);
   const route = readFileSync(
     join(process.cwd(), "src/app/api/synthesize/route.ts"),

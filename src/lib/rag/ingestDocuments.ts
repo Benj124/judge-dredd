@@ -90,24 +90,32 @@ export async function ingestTextDocumentsToRag(options: {
   };
 }
 
-export async function loadWhaleTextDocuments(
-  pool: Pool = getPool(),
+export async function loadStoredTextDocuments(
+  options: { slugs?: string[]; pool?: Pool } = {},
 ): Promise<TextDocument[]> {
-  const slugs = new Set(WHALE_WIKIPEDIA_SEEDS.map((seed) => seed.slug));
+  const pool = options.pool ?? getPool();
   const all = await listTextDocuments({ pool });
-  return all.filter((doc) => slugs.has(doc.slug));
+  if (!options.slugs?.length) return all;
+  const wanted = new Set(options.slugs);
+  return all.filter((doc) => wanted.has(doc.slug));
 }
 
-export async function ingestWhaleDocumentsToRag(options: {
+export async function ingestStoredDocumentsToRag(options: {
   embed: EmbedFn;
+  slugs?: string[];
   pool?: Pool;
   chunkOptions?: ChunkOptions;
 }): Promise<IngestDocumentsResult> {
   const pool = options.pool ?? getPool();
-  const documents = await loadWhaleTextDocuments(pool);
+  const documents = await loadStoredTextDocuments({
+    slugs: options.slugs,
+    pool,
+  });
   if (documents.length === 0) {
     throw new Error(
-      "No whale text_documents found. Run npm run graph:ingest-whales first.",
+      options.slugs?.length
+        ? `No text_documents found for slugs: ${options.slugs.join(", ")}`
+        : "No text_documents found. Ingest a corpus first (npm run ingest).",
     );
   }
   return ingestTextDocumentsToRag({
@@ -116,4 +124,36 @@ export async function ingestWhaleDocumentsToRag(options: {
     pool,
     chunkOptions: options.chunkOptions,
   });
+}
+
+export async function loadWhaleTextDocuments(
+  pool: Pool = getPool(),
+): Promise<TextDocument[]> {
+  const slugs = WHALE_WIKIPEDIA_SEEDS.map((seed) => seed.slug);
+  return loadStoredTextDocuments({ slugs, pool });
+}
+
+/** Demo wrapper: whale seeds through generic documents → chunks. */
+export async function ingestWhaleDocumentsToRag(options: {
+  embed: EmbedFn;
+  pool?: Pool;
+  chunkOptions?: ChunkOptions;
+}): Promise<IngestDocumentsResult> {
+  const slugs = WHALE_WIKIPEDIA_SEEDS.map((seed) => seed.slug);
+  try {
+    return await ingestStoredDocumentsToRag({
+      embed: options.embed,
+      slugs,
+      pool: options.pool,
+      chunkOptions: options.chunkOptions,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/No text_documents found/i.test(message)) {
+      throw new Error(
+        "No whale text_documents found. Run npm run graph:ingest-whales first.",
+      );
+    }
+    throw error;
+  }
 }

@@ -1,10 +1,13 @@
 import { getXaiApiKeys } from "../eval/xai";
-import { EMBED_DIM, resolveEmbedModel } from "./models";
+import { LIVE_EMBED_DIM, STUB_EMBED_DIM, resolveEmbedModel } from "./models";
 
 export type EmbedFn = (text: string) => Promise<number[]>;
 
-/** Deterministic bag-of-tokens vector so tests never call xAI. */
-export function stubEmbedSync(text: string, dim = EMBED_DIM): number[] {
+/**
+ * Deterministic bag-of-tokens vector so tests never call xAI.
+ * Default width is STUB_EMBED_DIM (matches the pgvector column).
+ */
+export function stubEmbedSync(text: string, dim = STUB_EMBED_DIM): number[] {
   const vec = new Array<number>(dim).fill(0);
   const tokens = text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   for (const token of tokens) {
@@ -45,9 +48,23 @@ export const xaiEmbed: EmbedFn = async (text) => {
   if (!Array.isArray(raw) || raw.length === 0) {
     throw new Error("xAI embeddings response missing vector");
   }
-  return resizeVector(raw, EMBED_DIM);
+  return assertLiveEmbedding(raw);
 };
 
+/**
+ * Accept a live API vector only at LIVE_EMBED_DIM. Never pad or truncate
+ * (including never shrinking to 32).
+ */
+export function assertLiveEmbedding(values: number[]): number[] {
+  if (values.length !== LIVE_EMBED_DIM) {
+    throw new Error(
+      `Live embedding length ${values.length} does not match LIVE_EMBED_DIM=${LIVE_EMBED_DIM}; refusing to truncate or pad`,
+    );
+  }
+  return values;
+}
+
+/** Test helper only. Do not call from xaiEmbed — truncating live vectors to 32 is forbidden. */
 export function resizeVector(values: number[], dim: number): number[] {
   if (values.length === dim) return values;
   const out = new Array<number>(dim).fill(0);

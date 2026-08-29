@@ -9,6 +9,7 @@ import { SynthesizePanel } from "@/components/SynthesizePanel";
 import { listDatasetRows, loadEvalCsv } from "@/lib/db/dataset";
 import { loadQuestions } from "@/lib/eval/questions";
 import { listAllRubrics } from "@/lib/eval/rubrics";
+import { listSynthesisTemplates } from "@/lib/db/synthTemplates";
 import { listTextDocumentSummaries } from "@/lib/graph/store";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,7 @@ export default async function Home() {
     })),
   }));
   const textDocuments = await listTextDocumentSummaries().catch(() => []);
+  const synthesisTemplates = await listSynthesisTemplates().catch(() => []);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -44,14 +46,14 @@ export default async function Home() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent font-display text-sm font-semibold text-accent-fg">
-              JD
+              SK
             </span>
             <div>
               <p className="font-display text-xl leading-none tracking-tight">
-                Judge Dredd
+                synthkit
               </p>
               <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted">
-                Internal evaluation
+                Eval data foundry
               </p>
             </div>
           </div>
@@ -62,12 +64,11 @@ export default async function Home() {
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-10">
         <div className="max-w-2xl">
           <h1 className="font-display text-4xl tracking-tight sm:text-5xl">
-            Judge the work. Tune the rules.
+            Synthesize questions. Judge the answers.
           </h1>
           <p className="mt-3 max-w-xl text-[15px] leading-7 text-muted">
-            Tabbed flows for fixtures, ad-hoc evaluate, evaluation prompts,
-            agent options, and question synthesis — with pass and fail marked
-            clearly on every verdict.
+            Ingest documents, mint a reviewed eval set, run a pointwise judge,
+            and export JSONL. Pass and fail stay visible on every verdict.
           </p>
         </div>
         <DashboardShell
@@ -99,6 +100,7 @@ export default async function Home() {
                   site: doc.site,
                   charCount: doc.charCount,
                 }))}
+                templates={synthesisTemplates}
               />
             ),
           }}

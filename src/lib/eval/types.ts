@@ -56,9 +56,23 @@ export type Verdict = {
 
 export type EvalErrorCode = "precheck" | "postcheck" | "judge" | "config";
 
+export type DeterministicCheckView = {
+  id: string;
+  passed: boolean;
+  detail: string;
+};
+
+export type RetrievalMetricsView = {
+  recallAtK: number;
+  mrr: number;
+  k: number;
+};
+
 export type EvaluateSuccess = {
   ok: true;
   verdict: Verdict;
+  checks?: DeterministicCheckView[];
+  retrieval?: RetrievalMetricsView;
 };
 
 export type EvaluateFailure = {

@@ -1,20 +1,38 @@
 {
-  "name": "judge-dredd",
+  "name": "synthkit",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "license": "MIT",
+  "description": "Local kit for ingesting corpora, synthesizing LLM eval questions, reviewing gold, and judging model answers.",
+  "bin": {
+    "synth": "bin/synth"
+  },
+  "files": [
+    "bin/synth",
+    "src/",
+    "scripts/",
+    "LICENSE",
+    "README.md",
+    "CONTRIBUTING.md",
+    "docker-compose.yml",
+    ".env.example"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/agentStack.test.ts src/lib/eval/aggregate.test.ts src/lib/eval/pipeline.test.ts src/lib/eval/http.test.ts src/lib/eval/format.test.ts src/lib/eval/checks.test.ts src/lib/eval/parse.test.ts src/lib/eval/complete.test.ts src/lib/eval/runQuestions.test.ts src/lib/eval/campaign.test.ts src/lib/eval/rubrics.test.ts src/lib/eval/ragJudge.test.ts src/lib/eval/batchCompare.test.ts src/lib/eval/etlDataset.test.ts src/lib/eval/generate.test.ts src/lib/db/config.test.ts src/lib/db/store.test.ts src/lib/db/history.test.ts src/lib/rag/retrieve.test.ts src/lib/rag/chunk.test.ts src/lib/rag/ingestDocuments.test.ts src/lib/graph/clean.test.ts src/lib/graph/store.test.ts src/lib/graph/synthesize.test.ts src/components/SynthesizePanel.test.tsx src/components/ui/uiPrimitives.test.tsx",
-    "test:coverage": "c8 --extension .ts --include src/lib/eval --include src/lib/db --include src/lib/rag --include src/lib/graph --exclude \"**/*.test.ts\" --reporter=text --reporter=json-summary --reports-dir coverage tsx --test src/lib/eval/aggregate.test.ts src/lib/eval/pipeline.test.ts src/lib/eval/http.test.ts src/lib/eval/format.test.ts src/lib/eval/checks.test.ts src/lib/eval/parse.test.ts src/lib/eval/complete.test.ts src/lib/eval/runQuestions.test.ts src/lib/eval/campaign.test.ts src/lib/eval/rubrics.test.ts src/lib/db/config.test.ts src/lib/db/store.test.ts src/lib/db/history.test.ts src/lib/rag/retrieve.test.ts src/lib/rag/chunk.test.ts src/lib/rag/ingestDocuments.test.ts src/lib/graph/clean.test.ts src/lib/graph/store.test.ts src/lib/graph/synthesize.test.ts src/components/SynthesizePanel.test.tsx",
+    "test": "tsx --test src/lib/agentStack.test.ts src/lib/eval/aggregate.test.ts src/lib/eval/pipeline.test.ts src/lib/eval/http.test.ts src/lib/eval/format.test.ts src/lib/eval/checks.test.ts src/lib/eval/parse.test.ts src/lib/eval/complete.test.ts src/lib/eval/runQuestions.test.ts src/lib/eval/campaign.test.ts src/lib/eval/rubrics.test.ts src/lib/eval/ragJudge.test.ts src/lib/eval/batchCompare.test.ts src/lib/eval/etlDataset.test.ts src/lib/eval/generate.test.ts src/lib/eval/datasetIo.test.ts src/lib/eval/datasetQuality.test.ts src/lib/eval/deterministic.test.ts src/lib/eval/retrievalMetrics.test.ts src/lib/eval/pairwiseProviders.test.ts src/lib/eval/campaignRepeatable.test.ts src/lib/db/config.test.ts src/lib/db/store.test.ts src/lib/db/history.test.ts src/lib/db/datasetObject.test.ts src/lib/rag/retrieve.test.ts src/lib/rag/embed.test.ts src/lib/rag/chunk.test.ts src/lib/rag/ingestDocuments.test.ts src/lib/graph/clean.test.ts src/lib/graph/store.test.ts src/lib/graph/corpus.test.ts src/lib/graph/synthesize.test.ts src/lib/graph/synthModes.test.ts src/lib/cli/synth.test.ts src/components/SynthesizePanel.test.tsx src/components/ui/uiPrimitives.test.tsx",
+    "test:coverage": "c8 --extension .ts --include src/lib/eval --include src/lib/db --include src/lib/rag --include src/lib/graph --exclude \"**/*.test.ts\" --reporter=text --reporter=json-summary --reports-dir coverage tsx --test src/lib/eval/aggregate.test.ts src/lib/eval/pipeline.test.ts src/lib/eval/http.test.ts src/lib/eval/format.test.ts src/lib/eval/checks.test.ts src/lib/eval/parse.test.ts src/lib/eval/complete.test.ts src/lib/eval/runQuestions.test.ts src/lib/eval/campaign.test.ts src/lib/eval/rubrics.test.ts src/lib/eval/datasetIo.test.ts src/lib/eval/datasetQuality.test.ts src/lib/eval/deterministic.test.ts src/lib/eval/retrievalMetrics.test.ts src/lib/eval/pairwiseProviders.test.ts src/lib/eval/campaignRepeatable.test.ts src/lib/db/config.test.ts src/lib/db/store.test.ts src/lib/db/history.test.ts src/lib/db/datasetObject.test.ts src/lib/rag/retrieve.test.ts src/lib/rag/embed.test.ts src/lib/rag/chunk.test.ts src/lib/rag/ingestDocuments.test.ts src/lib/graph/clean.test.ts src/lib/graph/store.test.ts src/lib/graph/corpus.test.ts src/lib/graph/synthesize.test.ts src/lib/graph/synthModes.test.ts src/components/SynthesizePanel.test.tsx",
     "eval:questions": "tsx src/lib/eval/runQuestions.cli.ts",
     "db:up": "bash scripts/db-up.sh",
     "db:migrate": "tsx src/lib/db/migrate.ts",
     "db:smoke": "tsx src/lib/db/smoke.ts",
+    "ingest": "tsx src/lib/graph/corpus.cli.ts",
+    "synth": "tsx src/lib/cli/synth.ts",
     "rag:query": "tsx src/lib/rag/query.cli.ts",
     "rag:ground": "tsx src/lib/rag/ground.cli.ts",
+    "rag:ingest": "tsx src/lib/rag/ingestDocuments.cli.ts",
     "rag:ingest-whales": "tsx src/lib/rag/ingestWhales.cli.ts",
     "etl:eval-data": "tsx src/lib/eval/etlDataset.cli.ts",
     "graph:ingest-whales": "tsx src/lib/graph/ingestWhales.cli.ts"

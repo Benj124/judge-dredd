@@ -19,8 +19,9 @@ const display = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "Judge Dredd",
-  description: "Internal evaluation playground — run a pointwise judge and read the verdict.",
+  title: "synthkit",
+  description:
+    "Ingest a corpus, synthesize eval questions, review gold, and judge model answers.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

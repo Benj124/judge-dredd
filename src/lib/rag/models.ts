@@ -1,6 +1,20 @@
 /** Cheap embedding alias — not a flagship/frontier chat model. */
 export const DEFAULT_EMBED_MODEL = "grok-embedding-small";
-export const EMBED_DIM = 32;
+
+/**
+ * Deterministic bag-of-tokens stub (`RAG_EMBED_STUB=1`). Same width as the
+ * pgvector column so tests can insert; this is not a real embedding model.
+ */
+export const STUB_EMBED_DIM = 768;
+
+/**
+ * Live xAI embedding width. `rag_chunks.embedding` and `xaiEmbed` use this.
+ * Never truncated to 32.
+ */
+export const LIVE_EMBED_DIM = 768;
+
+/** Store dimension: live and stub insert the same width. */
+export const EMBED_DIM = LIVE_EMBED_DIM;
 
 const FRONTIER = /^(grok-4\.5|grok-4\.6|grok-4$|grok-4-latest)/i;
 

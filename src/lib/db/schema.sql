@@ -19,9 +19,21 @@ CREATE INDEX IF NOT EXISTS evaluate_runs_created_at_idx
 
 ALTER TABLE evaluate_runs ADD COLUMN IF NOT EXISTS campaign_id TEXT;
 ALTER TABLE evaluate_runs ADD COLUMN IF NOT EXISTS fixture_id TEXT;
+ALTER TABLE evaluate_runs ADD COLUMN IF NOT EXISTS seed TEXT;
+ALTER TABLE evaluate_runs ADD COLUMN IF NOT EXISTS model_id TEXT;
+ALTER TABLE evaluate_runs ADD COLUMN IF NOT EXISTS dataset_version TEXT;
 
 CREATE INDEX IF NOT EXISTS evaluate_runs_campaign_idx
   ON evaluate_runs (campaign_id);
+
+CREATE TABLE IF NOT EXISTS campaigns (
+  id TEXT PRIMARY KEY,
+  seed TEXT,
+  model_id TEXT,
+  rubric_version TEXT,
+  dataset_version TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
 -- User-edited rubrics (built-in default stays in code; this is the dashboard store).
 CREATE TABLE IF NOT EXISTS stored_rubrics (
@@ -53,9 +65,28 @@ CREATE TABLE IF NOT EXISTS rag_chunks (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   source TEXT,
   content TEXT NOT NULL,
-  embedding vector(32) NOT NULL,
+  embedding vector(768) NOT NULL,
   tsv tsvector GENERATED ALWAYS AS (to_tsvector('english', content)) STORED
 );
+
+-- Live store is vector(768). Older vector(32) installs cannot ALTER in place;
+-- truncate and rebuild the column, then re-ingest.
+DO $$
+DECLARE
+  typ text;
+BEGIN
+  SELECT format_type(a.atttypid, a.atttypmod) INTO typ
+  FROM pg_attribute a
+  WHERE a.attrelid = 'rag_chunks'::regclass
+    AND a.attname = 'embedding'
+    AND NOT a.attisdropped;
+  IF typ IS DISTINCT FROM 'vector(768)' THEN
+    DROP INDEX IF EXISTS rag_chunks_embedding_hnsw;
+    TRUNCATE rag_chunks;
+    ALTER TABLE rag_chunks DROP COLUMN IF EXISTS embedding;
+    ALTER TABLE rag_chunks ADD COLUMN embedding vector(768) NOT NULL;
+  END IF;
+END $$;
 
 CREATE INDEX IF NOT EXISTS rag_chunks_embedding_hnsw
   ON rag_chunks USING hnsw (embedding vector_cosine_ops);
@@ -97,3 +128,67 @@ CREATE INDEX IF NOT EXISTS text_documents_site_idx
 
 CREATE INDEX IF NOT EXISTS text_documents_fetched_at_idx
   ON text_documents (fetched_at DESC);
+
+-- Versioned synthesized eval datasets. Items start pending (not gold).
+CREATE TABLE IF NOT EXISTS datasets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS dataset_versions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  dataset_id UUID NOT NULL REFERENCES datasets(id) ON DELETE CASCADE,
+  version INT NOT NULL,
+  source_slug TEXT NOT NULL,
+  prompt_hash TEXT NOT NULL,
+  prompt TEXT NOT NULL,
+  model TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (dataset_id, version)
+);
+
+CREATE INDEX IF NOT EXISTS dataset_versions_dataset_idx
+  ON dataset_versions (dataset_id, version DESC);
+
+CREATE TABLE IF NOT EXISTS dataset_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  dataset_id UUID NOT NULL REFERENCES datasets(id) ON DELETE CASCADE,
+  version_id UUID NOT NULL REFERENCES dataset_versions(id) ON DELETE CASCADE,
+  ordinal INT NOT NULL,
+  question TEXT NOT NULL,
+  expected_facts JSONB NOT NULL DEFAULT '[]'::jsonb,
+  difficulty TEXT,
+  source_slug TEXT NOT NULL,
+  prompt_hash TEXT NOT NULL,
+  model TEXT NOT NULL,
+  review_status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (review_status IN ('pending', 'kept', 'edited', 'rejected')),
+  is_gold BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  reviewed_at TIMESTAMPTZ,
+  UNIQUE (version_id, ordinal)
+);
+
+CREATE INDEX IF NOT EXISTS dataset_items_version_idx
+  ON dataset_items (version_id, ordinal);
+
+CREATE INDEX IF NOT EXISTS dataset_items_gold_idx
+  ON dataset_items (version_id)
+  WHERE is_gold = true;
+
+-- Versioned synthesis prompt templates (id + version). Built-ins also live in code.
+CREATE TABLE IF NOT EXISTS synthesis_templates (
+  id TEXT NOT NULL,
+  version TEXT NOT NULL,
+  mode TEXT NOT NULL,
+  name TEXT NOT NULL,
+  body TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (id, version)
+);
+
+CREATE INDEX IF NOT EXISTS synthesis_templates_mode_idx
+  ON synthesis_templates (mode, updated_at DESC);

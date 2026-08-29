@@ -1,6 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+/** Default local database name (compose, CI, .env.example). */
+export const DEFAULT_DATABASE_NAME = "synthkit";
+
+export const DEFAULT_DATABASE_URL = `postgres://judge:judge@127.0.0.1:5432/${DEFAULT_DATABASE_NAME}`;
+
 function readDatabaseUrlFromEnvFile(): string | undefined {
   const path = join(process.cwd(), ".env");
   if (!existsSync(path)) return undefined;

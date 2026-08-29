@@ -8,9 +8,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Judge Dredd — agent notes
+# synthkit — agent notes
 
-Internal evaluation playground/judge: score model answers against rubrics and fixtures, compare runs, persist history, and optionally ground judgments with hybrid RAG.
+Public eval kit (dashboard nickname: Judge Dredd): ingest corpora, synthesize and review gold questions, score model answers against rubrics, compare runs, persist history, and optionally ground judgments with hybrid RAG.
 
 ## Next.js version note
 
@@ -35,7 +35,7 @@ Leave pure app modules alone unless a change requires them. Human-facing overvie
 ## Run tests and CLIs
 
 ```bash
-npm test                 # unit tests (tsx --test); no live Postgres/xAI required for the suite
+npm test                 # tsx --test; needs local Postgres (CI provides pgvector). No live xAI.
 npm run lint
 npm run dev              # http://localhost:3000
 npm run db:up            # local Postgres (Docker Compose or Homebrew); never AWS
@@ -49,4 +49,4 @@ npm run etl:eval-data    # ETL eval dataset
 
 Env (gitignored `.env`): `DATABASE_URL` for local Postgres; `XAI_API_KEY` (optional `XAI_API_KEY2`) for live xAI calls. Tests often stub the LLM via `EVAL_LLM_STUB` or inject fakes—do not require network keys for `npm test`.
 
-Default local DB URL: `postgres://judge:judge@127.0.0.1:5432/judge_dredd`.
+Default local DB URL: `postgres://judge:judge@127.0.0.1:5432/synthkit`.

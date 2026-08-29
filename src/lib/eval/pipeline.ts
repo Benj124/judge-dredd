@@ -1,7 +1,15 @@
 import { aggregateOverall, overallPassed } from "./aggregate";
 import { precheck, type PrecheckOptions } from "./checks";
+import {
+  parseDeterministicInput,
+  runDeterministicChecks,
+} from "./deterministic";
 import { resolveJudgeModel } from "./models";
 import { extractJudgeOutput, parseJudgeJson, scoresById } from "./parse";
+import {
+  parseExpectedRetrievedContext,
+  scoreRetrievalGold,
+} from "./retrievalMetrics";
 import type {
   EvaluateFailure,
   EvaluateResult,
@@ -144,6 +152,23 @@ export async function evaluatePointwise(
       };
     });
 
+    const detInput = parseDeterministicInput(body);
+    const checks = detInput ? runDeterministicChecks(detInput) : undefined;
+    const gold = parseExpectedRetrievedContext(body);
+    const retrieval =
+      gold.length > 0
+        ? scoreRetrievalGold(
+            gold,
+            retrievedPassages.map((passage) => ({
+              id: passage.id,
+              text: passage.text,
+              source: passage.source,
+              score: passage.score,
+            })),
+            5,
+          )
+        : undefined;
+
     return {
       ok: true,
       verdict: {
@@ -155,6 +180,8 @@ export async function evaluatePointwise(
         rationale: extracted.rationale,
         retrievedPassages,
       },
+      checks,
+      retrieval,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : "Verdict failed checks";

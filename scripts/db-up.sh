@@ -1,19 +1,22 @@
 #!/usr/bin/env bash
-# Start local Postgres for Judge Dredd. Prefers Docker Compose; falls back to
+# Start local Postgres for synthkit. Prefers Docker Compose; falls back to
 # Homebrew PostgreSQL 16 on this machine. Does not use AWS/RDS.
+# An older Docker volume from a previous default database name is unused —
+# wipe it or `createdb synthkit` if you still have old data.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+DB_NAME="${POSTGRES_DB:-synthkit}"
 
 if docker info >/dev/null 2>&1; then
   echo "Starting Postgres via Docker Compose on localhost:5432"
   docker compose -f "$ROOT/docker-compose.yml" up -d
   echo "Waiting for healthcheck..."
   for _ in $(seq 1 40); do
-    if docker compose -f "$ROOT/docker-compose.yml" exec -T postgres pg_isready -U judge -d judge_dredd >/dev/null 2>&1; then
+    if docker compose -f "$ROOT/docker-compose.yml" exec -T postgres pg_isready -U judge -d "$DB_NAME" >/dev/null 2>&1; then
       echo "Postgres is ready (compose)."
-      echo "Use DATABASE_URL=postgres://judge:judge@127.0.0.1:5432/judge_dredd"
+      echo "Use DATABASE_URL=postgres://judge:judge@127.0.0.1:5432/${DB_NAME}"
       exit 0
     fi
     sleep 0.25
@@ -39,13 +42,13 @@ if pg_isready -q; then
   echo "Postgres already accepting connections on localhost."
 else
   mkdir -p /opt/homebrew/var/log
-  pg_ctl -D "$PGDATA" -l /opt/homebrew/var/log/judge-dredd-postgres.log start
+  pg_ctl -D "$PGDATA" -l /opt/homebrew/var/log/synthkit-postgres.log start
 fi
 
-if ! psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='judge_dredd'" | grep -q 1; then
-  createdb judge_dredd
-  echo "Created database judge_dredd"
+if ! psql -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | grep -q 1; then
+  createdb "$DB_NAME"
+  echo "Created database ${DB_NAME}"
 fi
 
 echo "Postgres is ready (homebrew)."
-echo "Use DATABASE_URL=postgres://$(whoami)@127.0.0.1:5432/judge_dredd"
+echo "Use DATABASE_URL=postgres://$(whoami)@127.0.0.1:5432/${DB_NAME}"

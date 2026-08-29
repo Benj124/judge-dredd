@@ -18,7 +18,7 @@ describe("agent-usable stack and human README", () => {
     assert.ok(agents.includes(end), "AGENTS.md must keep managed end marker");
 
     const after = agents.slice(agents.indexOf(end) + end.length);
-    assert.match(after, /synthkit/i);
+    assert.match(after, /Judge Dredd/);
     assert.match(after, /src\/lib\/eval/);
     assert.match(after, /src\/lib\/db/);
     assert.match(after, /src\/lib\/rag/);
@@ -73,7 +73,7 @@ describe("agent-usable stack and human README", () => {
     };
     const readme = read("README.md");
 
-    assert.match(readme, /synthkit/i);
+    assert.match(readme, /Judge Dredd/);
     assert.match(readme, /npm install/);
     assert.match(readme, /npm run dev/);
 

@@ -19,7 +19,7 @@ export type ScrapeOptions = {
 };
 
 const DEFAULT_UA =
-  "synthkit/0.1 (local ETL; educational; contact: local-dev)";
+  "judge-dredd/0.1 (local ETL; educational; contact: local-dev)";
 
 /**
  * Load a Wikipedia article with Playwright and return cleaned full text.

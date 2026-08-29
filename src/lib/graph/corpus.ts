@@ -34,7 +34,7 @@ export type CorpusIngestResult = {
 async function defaultFetch(url: string): Promise<FetchedResource> {
   const response = await fetch(url, {
     redirect: "follow",
-    headers: { "User-Agent": "synthkit/0.1 (local ingest)" },
+    headers: { "User-Agent": "judge-dredd/0.1 (local ingest)" },
   });
   const contentType = response.headers.get("content-type") ?? "";
   const bytes = Buffer.from(await response.arrayBuffer());

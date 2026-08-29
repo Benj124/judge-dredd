@@ -19,7 +19,7 @@ const display = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "synthkit",
+  title: "Judge Dredd",
   description:
     "Ingest a corpus, synthesize eval questions, review gold, and judge model answers.",
 };

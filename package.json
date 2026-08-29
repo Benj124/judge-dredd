@@ -1,6 +1,6 @@
 {
   "name": "judge-dredd",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "license": "MIT",
   "description": "Local kit for ingesting corpora, synthesizing LLM eval questions, reviewing gold, and judging model answers.",
@@ -25,9 +25,8 @@
     "node": ">=20"
   },
   "bin": {
-    "synth": "bin/synth",
-    "synthkit": "bin/synth",
-    "judge-dredd": "bin/synth"
+    "judge-dredd": "bin/synth",
+    "synth": "bin/synth"
   },
   "files": [
     "bin/synth",

@@ -82,7 +82,7 @@ export async function dispatchSynth(
   deps: SynthCliDeps = {},
 ): Promise<{ ok: true; command: string; payload: unknown }> {
   const args =
-    argv[0] === "synth" || argv[0] === "synthkit" || argv[0] === "judge-dredd"
+    argv[0] === "synth" || argv[0] === "judge-dredd"
       ? argv.slice(1)
       : argv;
   const command = args[0]?.trim() || "";

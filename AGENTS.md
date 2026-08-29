@@ -8,9 +8,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# synthkit — agent notes
+# Judge Dredd — agent notes
 
-Public eval kit (dashboard nickname: Judge Dredd): ingest corpora, synthesize and review gold questions, score model answers against rubrics, compare runs, persist history, and optionally ground judgments with hybrid RAG.
+Eval kit: ingest corpora, synthesize and review gold questions, score model answers against rubrics, compare runs, persist history, and optionally ground judgments with hybrid RAG.
 
 ## Next.js version note
 

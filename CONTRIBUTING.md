@@ -1,4 +1,4 @@
-# Contributing to synthkit
+# Contributing to Judge Dredd
 
 ## Setup
 

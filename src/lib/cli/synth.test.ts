@@ -226,7 +226,7 @@ test("fork hygiene: MIT license, public package, no CFA dump", () => {
     name: string;
     private: boolean;
     license: string;
-    bin?: { synth?: string; synthkit?: string; "judge-dredd"?: string };
+    bin?: { synth?: string; "judge-dredd"?: string };
     repository?: { url?: string };
     dependencies?: { tsx?: string };
   };
@@ -234,8 +234,11 @@ test("fork hygiene: MIT license, public package, no CFA dump", () => {
   assert.equal(pkg.name, "judge-dredd");
   assert.equal(pkg.license, "MIT");
   assert.equal(pkg.bin?.synth, "bin/synth");
-  assert.equal(pkg.bin?.synthkit, "bin/synth");
   assert.equal(pkg.bin?.["judge-dredd"], "bin/synth");
+  assert.equal(
+    (pkg.bin as { synthkit?: string } | undefined)?.synthkit,
+    undefined,
+  );
   assert.match(pkg.repository?.url ?? "", /github\.com\/Benj124\/judge-dredd/);
   assert.ok(pkg.dependencies?.tsx, "tsx must be a runtime dependency for npx synth");
   const envExample = readFileSync(join(root, ".env.example"), "utf8");
@@ -256,9 +259,8 @@ test("fork hygiene: MIT license, public package, no CFA dump", () => {
   assert.match(readme, /jsonl/i);
   assert.match(readme, /docker compose up/);
   assert.match(readme, /demo/i);
-  assert.match(readme, /^# synthkit/m);
-  assert.match(readme, /npm i synthkit/);
-  assert.doesNotMatch(readme, /^# Judge Dredd/m);
+  assert.match(readme, /^# Judge Dredd/m);
+  assert.doesNotMatch(readme, /^# synthkit/m);
   assert.doesNotMatch(readme, /internal evaluation/i);
   assert.match(readme, /\[!\[test\]/);
   assert.ok(existsSync(join(root, "CONTRIBUTING.md")));

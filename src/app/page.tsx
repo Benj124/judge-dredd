@@ -46,11 +46,11 @@ export default async function Home() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <div className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent font-display text-sm font-semibold text-accent-fg">
-              SK
+              JD
             </span>
             <div>
               <p className="font-display text-xl leading-none tracking-tight">
-                synthkit
+                Judge Dredd
               </p>
               <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted">
                 Eval data foundry

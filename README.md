@@ -1,16 +1,14 @@
-# synthkit
+# Judge Dredd
 
 A local kit for ingesting a corpus, synthesizing LLM eval questions, reviewing gold, and judging model answers.
 
 [![test](https://github.com/Benj124/judge-dredd/actions/workflows/test.yml/badge.svg)](https://github.com/Benj124/judge-dredd/actions/workflows/test.yml)
 
-The product is **synthkit**. On npm the package and the command you type are **`judge-dredd`**:
-
 ```bash
 npx judge-dredd help
 ```
 
-Do not `npx synth` or `npm i synthkit` — those names are unrelated packages. After a clone, `npx synth` is the local CLI alias. Live xAI keys are optional.
+Do not `npx synth` — that is a different package. After a clone, `npx synth` is a local alias for the same CLI. Live xAI keys are optional.
 
 ## First try
 
